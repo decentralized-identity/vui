@@ -1110,7 +1110,7 @@
                 {
                     "auth": [{
                         "accepted": ["any"],
-                        "type": "AppAuth"
+                        "type": "WalletAuth"
                     }, {
                         "accepted": ["Biometric", "Silent"],
                         "type": "AuthNFactor"
@@ -1349,158 +1349,392 @@
             </section>
             <section data-dfn-for="Security Mechanisms">
                 <h4>Security Mechanisms</h4>
+                <p>Security Mechanisms are additional authentication factors designed to provide additional guarantees on the source of the credentials.</p>
+                <p>
+                    There are two kinds of possible Security Mechanisms to be enforced by the Holder Wallet: <b>Wallet Authentication</b> and <b>AuthNFactor Credentials</b>
+                </p>
+                <p class="ednote">
+                    Other security mechanisms might be defined on future revisions of the document.
+                </p>
                 <section data-dfn-for="Wallet Authentication">
                     <h4>Wallet Authentication</h4>
+                    <p>
+                        <p>Wallet Authentication is required to ensure that the wallet holding the credentials is actually a secure environment, by identifying uniquely the wallet on which the Presentation Response has been generated.</p>
+                        <p>Auditing Credential Wallets from different providers SHOULD be required to ensure an acceptable level of integrity on managing the data.</p>
+                        <p>Correct data models and cryptographic schemes SHOULD NOT be easily trusted, unless the source is proven.</p>
+                    </p>
+                    <p>
+                        Wallet Authentication relies on assigning a DID to the wallet application. The corresponding private key to the DID MUST be securely embedded inside the Wallet Application.
+                        <p>
+                            If a Presentation Request requires a <b>Wallet Authentication</b> Security Mechanism, then on presentation response, a WalletAuthentication object MUST be present with the two properties:
+                            <dl>
+                                <dt>
+                                    DID
+                                </dt>
+                                <dd>
+                                    DID corresponding to the wallet embedded key.
+                                </dd>
+                                <dt>
+                                    Proof
+                                </dt>
+                                <dd>
+                                    Presentation request nonce signed with the Wallet DID Private Key.
+                                </dd>
+                            </dl>
+                        </p>
+                    </p>
+                    <p class="ednote">
+                        The listing of all possible secure Wallets DIDs, along with its discovery, is outside the scope of this document, at least on its first version.
+                    </p>
+                    <p class="note">
+                        Defying characteristics and security requirements on Wallets or on client keys management is outside the scope of this document. It is however RECOMMENDED that the Wallet DID Key is composed between two halves -client side & server side- with obfuscation and sandbox detection techniques to avoid the retrieval of the real private key.
+                    </p>
                 </section>
                 <section data-dfn-for="AuthNFactor Credentials">
                     <h4>AuthNFactor Credentials</h4>
+                    <p>
+                        <p>
+                            AuthNFactor Credentials are a specific subtype of Verifiable Credentials that MAY be used to authenticate the Subject and provide serverside proofing of that authentication.
+                        </p>
+                        <p>
+                            AuthNFactor Credentials are credentials to wrap a Cryptographic KeyPair:
+                            <ul>
+                                <li>
+                                    The Public part of the key is stated as the claim of the credential.
+                                </li>
+                                <li>
+                                    The Private part of the key is stored on the Wallet's secure storage. To retrieve the private part from the wallet, the Subject MUST perform an authentication process, such as receiving an OTP or inputing his biometry.
+                                </li>
+                            </ul>
+                        </p>
+                    </p>
+                    <p class="ednote">
+                        AuthNFactor Credentials are proposed as an adaptation of the FIDO standard to the Verifiable Credentials model. There are other interesting contributions on this line, such as <a href="https://github.com/decentralized-identity/horcrux">DIF's Horcrux</a>.
+                    </p>
+                    <p>
+                        AuthNFactor Credentials consist on a single claim with the following properties:
+                        <dl>
+                            <dt>
+                                Id
+                            </dt>
+                            <dd>
+                                Anywise DID of the Subject
+                            </dd>
+                            <dt>
+                                Public Key
+                            </dt>
+                            <dd>
+                                Public part of the cryptographic keypair associated to this AuthNFactor Credential
+                            </dd>
+                            <dt>
+                                Receiver
+                            </dt>
+                            <dd>
+                                A receiver information MAY be stated on the credential, to link the AuthNFactor with other Credentials from the subject.
+                                <pre class="example" title="AuthNFactor Receivers">
+                                    * A biometric AuthNFactor Credential MAY be linked to the device containing the biometric capacities by stating the deviceId on the receiver property.
+                                    * An email AuthNFactor Credential MAY be linked to the email account receiving the OTP by stating the account on the receiver property.
+                                </pre>
+                            </dd>
+                        </dl>
+                    </p>
+                    <p>
+                        AuthNFactor Credentials MAY be of one of the following types
+                        <dl>
+                            <dd>
+                                email
+                            </dd>
+                            <dt>
+                                Subject MUST perform a second factor authentication via OTP received on the email.
+                            </dt>
+                            <dd>
+                                phone
+                            </dd>
+                            <dt>
+                                Subject MUST perform a second factor authentication via OTP received on his phone.
+                            </dt>
+                            <dd>
+                                silent
+                            </dd>
+                            <dt>
+                                Subject MUST conform his identity by having the wallet application currently open on his device, without providing any further interaction.
+                            </dt>
+                            <dd>
+                                biometric
+                            </dd>
+                            <dt>
+                                Subject MUST perform a biometric authentication as a second factor.
+                            </dt>
+                        </dl>
+                    </p>
+                    <p>
+                        AuthNFactor Credentials MUST be issued by the same trusted provider in charge of governing the Wallet.
+                    </p>
+                    <pre class="example" title="Biometric AuthNFactor Credential">
+                        <pre class="code">
+                            {
+                                "credentialSubject": {
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                    "publicKey": "BqBaKkzcbwmFq9m89jaGEXRur8XzWssZcns83AV2iQfG",
+                                    "receiver": "216a4aeed3536a68"
+                                },
+                                "id": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                                "issuanceDate": "2020-11-06T08:32:12Z",
+                                "issuer": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH",
+                                "proof": [{
+                                    "created": "2020-11-06T08:32:13Z",
+                                    "creator": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "BnE9Hjs4yBMCoSRPCfc-s141E-sD0847RHSFsSJ5lGeeC15vAlIjAxaLXN_N7FnKMjIrx-yiIkhLKvTn4XmYCQ",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "biometricAuthNFactorCredential"]
+                            }
+                        </pre>
+                    </pre>
+                    <p>
+                        <p>
+                            If a Presentation Request requires a <b>Wallet Authentication</b> Security Mechanism, then on presentation response, a AuthNFactorCredentials object MUST be present containing a <a href="https://www.w3.org/TR/vc-data-model/#presentations">Verifiable Presentation</a>:
+                        </p>
+                        <p>
+                            The AuthNFactorCredentials presentation MUST be signed by each the Private Keys of each the AuthNFactor Credentials selected.
+                        </p> 
+                        <p>
+                            Each presentation proof MUST contain the nonce of the corresponding presentation request as a <b>challenge</b>.
+                        </p>
+                        <p>
+                            Each of the proof creators MUST refer to the id of the AuthNFactor Credential used for proofing.
+                        </p>
+                    </p>
+                    <p class="ednote">
+                        Specific AuthNfactor credentials shall be defined on different wallets and SSI technology stacks.
+                        The listing of all the possible AuthNFactor types, as well as its management and discovery, is outside the scope of this document.
+                    </p>
                 </section>
             </section>
         </section>
         <section data-dfn-for="Presentation Response">
             <h3>Presentation Response</h3>
+            <p>A Presentation Response is a document created by the Holder to satisfy a Presentation Request.</p>
+            <p>It is composed of <a href="https://www.w3.org/TR/vc-data-model/#presentations">Verifiable Presentations</a> to allow the successive data validation from the Verifier.</p>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    The Presentation Response Id MUST match the Id of the Presentation Request to be satisfied.
+                </dd>
+                <dt>
+                    Credentials
+                </dt>
+                <dd>
+                    <p>
+                        Verifiable Presentation containing the selection of Verifiable Credentials satisfying the requirements stablished by the Presentation Request.
+                    </p>
+                    <p>
+                        The Presentation MUST be signed by a PairWise DID. 
+                    </p>
+                    <p>
+                        The Subject of all the Credentials existing on the presentation SHOULD be the same.
+                    </p>
+                    <p>
+                        The presentation proof MUST contain the nonce of the associated presentation request as a <b>challenge</b>.
+                    </p>
+                    <p>
+                        Non-mandatory credentials MAY not be present on the Verifiable Presentation.
+                    </p>
+                    <p class="note">
+                        The process of building a digital identity should be implemented by linking a growing number of proved claims to a single identifier. However, it is possible for a single subject to possess multiple DIDs -for instance on multiple SSI platforms-.
+                        Being able to trace and assert the relation of various DIDs to a single subject is an authentication need outside the scope of this document.
+                    </p>
+                </dd>
+                <dt>
+                    Security Mechanisms
+                </dt>
+                <dd>
+                    <p>
+                        Proof of enforcement of the requested <a href="#security-mechanisms">security mechanisms</a>. There are two possible properties:
+                    </p>
+                    <dl>
+                        <dt>
+                            Wallet Auth
+                        </dt>
+                        <dd>
+                            Wallet Identifier and its corresponding proof, as the nonce signed with the corresponding key
+                        </dd>
+                        <dt>
+                            AuthNFactor Credentials
+                        </dt>
+                        <dd>
+                            Verifiable Presentation with the AuthNFactor Credentials enforced, proofed by each of the related keys.
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
             <pre class="example" title="Example of Presentation Response">
             <pre class="json">
     {
                     "id": "d2b2e10c-d894-4614-a003-630958ee4a02",
                     "securityMechanisms": {
+                        "walletAuth": {
+                            "id":"did:gatc:CehhauO4AL2KSkW40PtAMS57XteDYCFv",
+                            "proof":"ZX9CVNQhWpFpiVwuxNWvGoj_iNRWErrv3rpKhXbayBFgFmJVFA6-h1Bx8bb4bl7Z9reJ9BjXchptTzh4PLf3"
+                        },
+                        "authNFactorCredentials": {
+                            "@context": ["https://www.w3.org/2018/credentials/v1"],
+                            "proof": [{
+                                "challenge": "750655b9-dca0-48a6-8508-ad3f947c9d34",
+                                "created": "2020-11-06T12:48:53Z",
+                                "creator": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                                "proofPurpose": "authentication",
+                                "proofValue": "FgFmJVFA6-38np0wG7YxYPgN8zofB_ZX9CVNQhWpFpiVwuxNWvGoj_R3V9PGtJiNRWErrv3rpKhXbayBxzxFCw",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiablePresentation", "GatacaCredentialPresentation"],
+                            "verifiableCredential": [{
+                                "credentialSubject": {
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                    "publicKey": "BqBaKkzcbwmFq9m89jaGEXRur8XzWssZcns83AV2iQfG",
+                                    "receiver": "216a4aeed3536a68"
+                                },
+                                "id": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                                "issuanceDate": "2020-11-06T08:32:12Z",
+                                "issuer": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH",
+                                "proof": [{
+                                    "created": "2020-11-06T08:32:13Z",
+                                    "creator": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "BnE9Hjs4yBMCoSRPCfc-s141E-sD0847RHSFsSJ5lGeeC15vAlIjAxaLXN_N7FnKMjIrx-yiIkhLKvTn4XmYCQ",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "silentAuthNFactorCredential"]
+                            }]
+                        }
+                    },
+                    "credentials": {
                         "@context": ["https://www.w3.org/2018/credentials/v1"],
                         "proof": [{
                             "challenge": "750655b9-dca0-48a6-8508-ad3f947c9d34",
-                            "created": "2020-11-06T12:48:53Z",
-                            "creator": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                            "created": "2020-11-06T12:48:57Z",
+                            "creator": "did:gatc:OTk5ZDIxNjEzYjBlNWViN2VlNjRhNTJi#keys-1",
                             "proofPurpose": "authentication",
-                            "proofValue": "FgFmJVFA6-38np0wG7YxYPgN8zofB_ZX9CVNQhWpFpiVwuxNWvGoj_R3V9PGtJiNRWErrv3rpKhXbayBxzxFCw",
+                            "proofValue": "WNYVmiQe8qYqt3z3YNi33E-iNTmxHtLozsZUA3G4YfYTc6mJd70evnoOIBIxY1MMA62q9SjQ6egws7zd5R-UAg",
                             "type": "Ed25519Signature2018"
                         }],
                         "type": ["VerifiablePresentation", "GatacaCredentialPresentation"],
                         "verifiableCredential": [{
-                            "credentialSubject": {
-                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
-                                "publicKey": "BqBaKkzcbwmFq9m89jaGEXRur8XzWssZcns83AV2iQfG",
-                                "receiver": "216a4aeed3536a68"
-                            },
-                            "id": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
-                            "issuanceDate": "2020-11-06T08:32:12Z",
-                            "issuer": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH",
-                            "proof": [{
-                                "created": "2020-11-06T08:32:13Z",
-                                "creator": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH#keys-1",
-                                "proofPurpose": "authentication",
-                                "proofValue": "BnE9Hjs4yBMCoSRPCfc-s141E-sD0847RHSFsSJ5lGeeC15vAlIjAxaLXN_N7FnKMjIrx-yiIkhLKvTn4XmYCQ",
-                                "type": "Ed25519Signature2018"
-                            }],
-                            "type": ["VerifiableCredential", "silentAuthNFactorCredential"]
-                        }]
-                    },
-                    "verifiablePresentation": {
-                    "@context": ["https://www.w3.org/2018/credentials/v1"],
-                    "proof": [{
-                        "created": "2020-11-06T12:48:57Z",
-                        "creator": "did:gatc:OTk5ZDIxNjEzYjBlNWViN2VlNjRhNTJi#keys-1",
-                        "proofPurpose": "authentication",
-                        "proofValue": "WNYVmiQe8qYqt3z3YNi33E-iNTmxHtLozsZUA3G4YfYTc6mJd70evnoOIBIxY1MMA62q9SjQ6egws7zd5R-UAg",
-                        "type": "Ed25519Signature2018"
-                    }],
-                    "type": ["VerifiablePresentation", "GatacaCredentialPresentation"],
-                    "verifiableCredential": [{
-                            "credentialStatus": {
-                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
-                                "type": "CredentialStatusList2017"
-                            },
-                            "credentialSubject": {
-                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
-                                "studentId": "johnsmith10"
-                            },
-                            "id": "cred:gatc:tqn2onxicmlezcmollcdkmjgyrj53b1x1086",
-                            "issuanceDate": "2020-11-06T11:57:32Z",
-                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
-                            "proof": [{
-                                "created": "2020-11-06T11:57:32Z",
-                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
-                                "proofPurpose": "authentication",
-                                "proofValue": "1U66hjpO-Ep78fR60ArTxIKjqdnpsSKee1AjQOxtsCmBdfzQbAniBsYFNmWSuexgaxEHYZpXTeTBZpfdxdUZBA",
-                                "type": "Ed25519Signature2018"
-                            }],
-                            "type": ["VerifiableCredential", "studentIdCredential"]
+                                "credentialStatus": {
+                                    "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                    "type": "CredentialStatusList2017"
+                                },
+                                "credentialSubject": {
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                    "studentId": "johnsmith10"
+                                },
+                                "id": "cred:gatc:tqn2onxicmlezcmollcdkmjgyrj53b1x1086",
+                                "issuanceDate": "2020-11-06T11:57:32Z",
+                                "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                                "proof": [{
+                                    "created": "2020-11-06T11:57:32Z",
+                                    "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "1U66hjpO-Ep78fR60ArTxIKjqdnpsSKee1AjQOxtsCmBdfzQbAniBsYFNmWSuexgaxEHYZpXTeTBZpfdxdUZBA",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "studentIdCredential"]
+                                }, {
+                                "credentialStatus": {
+                                    "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                    "type": "CredentialStatusList2017"
+                                },
+                                "credentialSubject": {
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                    "lastname": "SMITH"
+                                },
+                                "id": "cred:gatc:4npxte79gk55zis44339zast75dq94mjqmyk",
+                                "issuanceDate": "2020-11-06T11:57:32Z",
+                                "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                                "proof": [{
+                                    "created": "2020-11-06T11:57:32Z",
+                                    "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "foHciBH0tBZmIrS6SbI2t3vF6iqvWJFdtfRp6hnsIEGcPqCu27WXLYYNqgMmn2lJaj9nJG91Km-_low_TLf7DQ",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "lastNameCredential"]
                             }, {
-                            "credentialStatus": {
-                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
-                                "type": "CredentialStatusList2017"
-                            },
-                            "credentialSubject": {
-                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
-                                "lastname": "SMITH"
-                            },
-                            "id": "cred:gatc:4npxte79gk55zis44339zast75dq94mjqmyk",
-                            "issuanceDate": "2020-11-06T11:57:32Z",
-                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
-                            "proof": [{
-                                "created": "2020-11-06T11:57:32Z",
-                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
-                                "proofPurpose": "authentication",
-                                "proofValue": "foHciBH0tBZmIrS6SbI2t3vF6iqvWJFdtfRp6hnsIEGcPqCu27WXLYYNqgMmn2lJaj9nJG91Km-_low_TLf7DQ",
-                                "type": "Ed25519Signature2018"
-                            }],
-                            "type": ["VerifiableCredential", "lastNameCredential"]
-                        }, {
-                            "credentialStatus": {
-                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
-                                "type": "CredentialStatusList2017"
-                            },
-                            "credentialSubject": {
-                                "firstname": "JOHN",
-                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
-                            },
-                            "id": "cred:gatc:0w334gdrx87duqanp1eymfzlcyh22g0ox32z",
-                            "issuanceDate": "2020-11-06T11:57:32Z",
-                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
-                            "proof": [{
-                                "created": "2020-11-06T11:57:32Z",
-                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
-                                "proofPurpose": "authentication",
-                                "proofValue": "ImRTvgGGbJt-0achi8jGuBtFnulp-KTi7Sp_7q4uSR-QZiEJUeQ7ugmUePCqCI6HMw5LiyMa7zMPB2JFvP35DA",
-                                "type": "Ed25519Signature2018"
-                            }],
-                            "type": ["VerifiableCredential", "firstNameCredential"]
-                        }, {
-                            "credentialStatus": {
-                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
-                                "type": "CredentialStatusList2017"
-                            },
-                            "credentialSubject": {
-                                "academicInstitution": "Awesome Technical University",
-                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
-                            },
-                            "id": "cred:gatc:a00loy0pcfkdiq6tx9sburq5a2jl6r1z2icc",
-                            "issuanceDate": "2020-11-06T11:57:32Z",
-                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
-                            "proof": [{
-                                "created": "2020-11-06T11:57:32Z",
-                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
-                                "proofPurpose": "authentication",
-                                "proofValue": "44DbZZkpwxMshjxH14XlHxzdXL9pC4MbmdJSP7KwKwk-BzK5oSnQpIH2jSYn84GPs1EGdLmbQcVdo-42HaHwBw",
-                                "type": "Ed25519Signature2018"
-                            }],
-                            "type": ["VerifiableCredential", "academicInstitutionCredential"]
-                    }]
+                                "credentialStatus": {
+                                    "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                    "type": "CredentialStatusList2017"
+                                },
+                                "credentialSubject": {
+                                    "firstname": "JOHN",
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
+                                },
+                                "id": "cred:gatc:0w334gdrx87duqanp1eymfzlcyh22g0ox32z",
+                                "issuanceDate": "2020-11-06T11:57:32Z",
+                                "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                                "proof": [{
+                                    "created": "2020-11-06T11:57:32Z",
+                                    "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "ImRTvgGGbJt-0achi8jGuBtFnulp-KTi7Sp_7q4uSR-QZiEJUeQ7ugmUePCqCI6HMw5LiyMa7zMPB2JFvP35DA",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "firstNameCredential"]
+                            }, {
+                                "credentialStatus": {
+                                    "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                    "type": "CredentialStatusList2017"
+                                },
+                                "credentialSubject": {
+                                    "academicInstitution": "Awesome Technical University",
+                                    "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
+                                },
+                                "id": "cred:gatc:a00loy0pcfkdiq6tx9sburq5a2jl6r1z2icc",
+                                "issuanceDate": "2020-11-06T11:57:32Z",
+                                "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                                "proof": [{
+                                    "created": "2020-11-06T11:57:32Z",
+                                    "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                    "proofPurpose": "authentication",
+                                    "proofValue": "44DbZZkpwxMshjxH14XlHxzdXL9pC4MbmdJSP7KwKwk-BzK5oSnQpIH2jSYn84GPs1EGdLmbQcVdo-42HaHwBw",
+                                    "type": "Ed25519Signature2018"
+                                }],
+                                "type": ["VerifiableCredential", "academicInstitutionCredential"]
+                        }]
                     }   
                 }
             </pre>
             </pre>
+            <p>
+                The Presentation Response MUST be sent to the Verifier domain stated on the Presentation Request.
+                The sharing of the message SHOULD be done using an HTTP POST request to the specific path <b>/api/v1/sessions</b>.
+                <pre class="http">
+                    <code class="http">
+                        POST /api/v1/sessions HTTP/1.1
+                        Host: $presentationRequest.callback
+                        Content-Type: application/json
+    
+                        {
+                            //Presentation Response ...
+                        }
+                    </code>
+                </pre>
+                <p class="issue">
+                    Allow configuration and discovery of non-standard paths for presenting Presentation Responses.
+                </p>
+            </p>
             <section data-dfn-for="Pairwise DIDs">
                 <h4>Pairwise DIDs</h4>
                 <p>
-                    Presentation Responses MUST be signed with a Pairwise DID.
+                    The Verifiable Presentation on Presentation Responses MUST be signed exclusively with a Pairwise DID.
                 </p>
                 <p>
-                    The Presentation Responses MUST be signed with a Pairwise DID.
+                    Revoking the Pairwise DID SHOULD automatically render invalid any future presentation containing signed by it. Pairwise DIDs MUST only be revoked by the Subject as its rightful Owner.
                 </p>
                 <p>
-                    Revoking the Pairwise DID MUST automatically render invalid any presentation containing signed by it.
-                </p>
-                <p>
-                    For tracing the PairWise DID to the AnyWise DID stated on the subject of the credentials, see <a href="#verifiable-consent"></a>
+                    For tracing the PairWise DID to the AnyWise DID stated on the subject of the credentials, see <a href="#verifiable-consent"></a>.
                 </p>
             </section>
         </section>
