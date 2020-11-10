@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Verifier Open Protocol</title>
+    <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+    <script class="remove">
+        // All config options at https://respec.org/docs/ 
+        var respecConfig = {
+            specStatus: "ED",
+            editors: [
+                { name: "José San Juan", url: "https://gataca.io", mailto: "it@gataca.io" },
+            ],
+            shortName: "ssiverifier",
+            xref: "web-platform",
+            group: "Verifier OpenAPIs Interop Group",
+        };
+    </script>
+    <style>
+        .oplist {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .oplist:first-of-type {
+            counter-reset: item;
+        }
+
+        .start2 {
+            counter-set: item 1;
+        }
+
+        .start4 {
+            counter-set: item 3;
+        }
+
+        .oplist>li {
+            display: table;
+            counter-increment: item;
+            margin-bottom: 0.6em;
+        }
+
+        .oplist>li:before {
+            content: counters(item, ".") ". ";
+            display: table-cell;
+            padding-right: 0.6em;
+        }
+
+        li .oplist>li {
+            margin: 0;
+        }
+
+        li .oplist>li:before {
+            content: counters(item, ".") " ";
+        }
+
+        table {
+            border-collapse: collapse;
+            border-width: 1px;
+        }
+
+        table td,
+        table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <section id="abstract">
+        <p>
+            Decentralized digital identity, or "self-sovereign" identity (SSI), is a new paradigm proposed for managing
+            digital identities. Relying on Decentralized identifiers (DIDs) and Verifiable Credentials (VC), the subject
+            and his personal credentials are independent from any centralized registry,
+            identity provider, or certificate authority.
+        </p>
+        <p>
+            On the Decentralized Identity model, the role associated to requesting and verifying credentials is
+            defined as the Verifier.
+        </p>
+        <dd>
+            The verifier functionality is to support the data collector as it tries to acquire credentials from some
+            other party for the purpose of negotiating a business transaction. It does so by creating presentation
+            requests (or Presentation Definition as it is called in the draft DIF specfication for Presentation
+            Exchange) that ask for such credentials, sending them to a holder component of another party, receiving
+            a
+            response to such a request (which we call a 'presentation'), verifying the presentation, i.e. checking
+            the
+            signature and other proofs of the veracity of both the construction of the presentation as well as its
+            contents, thus providing the party with verified data.
+
+        </dd>
+
+        <p>
+            This document specifies the algorithms, protocols and guidelines to be implemented by any Verifier willing
+            to provide SSI functions.
+        </p>
+
+        <p class="ednote">
+            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
+            propose an open verifier protocol. This format is however extremely adequate to allow to work and contribute
+            on the protocol definition.
+        </p>
+    </section>
+    <section id="sotd">
+        <p> </p>
+    </section>
+    <section data-dfn-for="Context">
+        <h1>Context</h1>
+        <p>
+            As different technology providers are offering SSI Solutions, it becomes a relevant matter to ensure
+            interoperability between those providers. On a not yet stable market, most providers aim to offer the whole
+            SSI stack: components for holders, verifiers, issuers and did-resolver.
+        </p>
+        <p>
+            In order to avoid vendor lock-ins, the APIs exploited by the Verifiers component can be standarized. This
+            document aims to offer the sufficient capabilities for a Verifier component of some technology provider to
+            use the technology stack of another SSI provider.
+        </p>
+        <section id="conformance">
+        </section>
+        <section id="terminology">
+            <h2>Terminology</h2>
+            <dl>
+                <dt><dfn data-lt="DID|DIDs|decentralized identifiers">Decentralized Identifier</dfn> (DID)</dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID document</dfn></dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID resolution</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="DID resolver's">DID resolver</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="VC|Verifiable Credential">Verifiable Credential</dfn> (VC)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="Schema Registry|Credential Catalog">Schema Registry</dfn></dt>
+                <dd> See Section <a href="#registries"></a>.</dd>
+                <dt><dfn data-lt="Issuer Registry|Issuer Catalog">Issuer Registry</dfn></dt>
+                <dd> See Section <a href="#registries"></a>.</dd>
+                <dt><dfn data-lt="Presentation Request|PR">Presentation Request</dfn> (PR)</dt>
+                <dd> See Section <a href="#presentation-exchange"></a>.</dd>
+            </dl>
+        </section>
+        <section data-dfn-for="Operations" class="informative">
+            <h2>Verifier operations</h2>
+            <p>
+                Any Verifier MUST perform the following operations:
+            <ol class="oplist">
+                <li>
+                    Request and receive specific information to holders in the form of Verifiable Credentials (presented
+                    in a Verifiable Presentation)
+                </li>
+                <li>
+                    Verify received VCs. That includes:
+                    <ol>
+                        <li>
+                            Verify the proofs of every credential
+                        </li>
+                        <li>
+                            Verify the proof of the presentation
+                        </li>
+                        <li>
+                            Verify that the information received matches the information requested
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+
+
+            Additionally, any Verifier SHALL perform the following operations:
+            <ol start="2" class="oplist start2">
+                <li>
+                    While verifying the received VCs:
+                    <ol start="4" class="oplist start4">
+                        <li>
+                            Verify the Issuer of the credential
+                            <ol class="oplist">
+                                <li>
+                                    Its authority over the credential
+                                </li>
+                                <li>
+                                    Its associated trust level
+                                </li>
+                            </ol>
+                        </li>
+                        <li>
+                            Verify the status of every credential
+                        </li>
+                        <li>
+                            Verify and match the ownership of the Verifiable Credentials and the Verifiable Presentation
+                        </li>
+                        <li>
+                            Verify that all credentials can be linked to the same entity
+                        </li>
+                        <li>
+                            Verify that the credentials requested satisfy some stablished constraints
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Verify that the credentials have been handled from a secure wallet
+                </li>
+                <li>
+                    Authenticate the wallet owner
+                </li>
+                <li>
+                    Manage the consent of the usage of the information inside the credentials
+                </li>
+                <li>
+                    Ensure user anonimity and non external traceability
+                </li>
+                <li>
+                    Manage selective disclosure of the information contained on the credentials
+                </li>
+            </ol>
+            </p>
+
+        </section>
+        <section data-dfn-for="Assumptions">
+            <h2>Assumptions</h2>
+            The are several posible perspectives and solutions for different SSI Models. This Verifier APIs propose a
+            protocol under some strict assumptions. Those conditions can be justified for the sake of simplicity and
+            conformance with current regulation.
+            <dl>
+                <dt>
+                    DLT Agnosticity
+                </dt>
+                <dd>
+                    DID Models rely on different DLTs to store DID Documents, as well as other elements or documents
+                    from the SSI Model. No solution depending on a specific DLT (or blockchain application, or
+                    technology provider) shall be considered. The DLT MAY be used exclusively as a decentralized Public
+                    Key Infrastructure to verify cryptographic signatures of elements.
+                </dd>
+                <dt>
+                    Identity Governance
+                </dt>
+                <dd>
+                    There SHALL be a party responsible on reviewing and defining which information can be securely
+                    attested by different providers. In order to comply with regulation, Issuers shall be known and
+                    registered along with the information that can be validated by each of them.<br>
+                    There MUST be accessible registries to find the credentials and issuers available.
+                </dd>
+                <dt>
+                    Monoclaim credentials
+                </dt>
+                <dd>
+                    In order to ensure data minimization and allow selective disclosure, all the verifiable credentials
+                    handled on both presentation requests and verifiable presentations MUST be monoclaim.<br>
+                    A monoclaim credential is a credential containing no more than the subject of the credential and a
+                    single attribute of his identity. No credential can contain more than one attribute. The format of
+                    that attribute is however free to be defined.<br>
+                    Different attributes strictly related between them, or belonging to a bigger credential, MAY be
+                    grouped into credential groups.
+                </dd>
+            </dl>
+        </section>
+    </section>
+    <section data-dfn-for="Interfaces" class="informative">
+        <h1>Interfaces</h1>
+        <p>
+            In order to allow Verifier operation as decribed in <a href="#verifier-operations">the previous section</a>,
+            this
+            document proposes a definition of the Interfaces between the Verifier and other components.
+        </p>
+        <p>
+            Those interfaces MUST be independent from any framework or programming language. Interfaces shall be
+            implemented with standard communication protocols through web services. Usage of REST is recommended.
+        </p>
+
+        Depending on the party to interact and the functionality described to cover, a Verifier SHALL make use of the
+        following defined interfaces for his operation:
+        <figure id="api-functional-alignment">
+            <pre class="json">
+                 +------------------------------------++------------------------------------++-----------------++-----------------+
+                 |            Holder                  ||             Governance             ||  DID Resolver   ||     Issuer      |
+                 +------------------------------------++------------------------------------++-----------------++-----------------+
+                +------------------------------------------------------------------------------------------------------------------+ 
+                |+-----------------++-----------------++-----------------++-----------------++-----------------++-----------------+|
+                ||                 ||                 ||                 ||                 ||                 ||                 ||
+                || Presentation    || Consent         || Schema Registry || Issuer Registry || DID Resolution  || Credential      ||
+                || Exchange        || Management      || Query           || Query           ||                 || Status          ||
+                ||                 ||                 ||                 ||                 ||                 || Query           ||
+                ||                 ||                 ||                 ||                 ||                 ||                 ||
+                ||                 ||                 ||                 ||                 ||                 ||                 ||
+                ||       API       ||       API       ||       API       ||       API       ||       API       ||      API        ||
+                ++-----------------++------------------------------------++-----------------++-----------------++-----------------++
+                |   1, 2.3, 3,      |     2.6, 2.7,    |       2.6, 7     |      2.2         |      2.1, 2.2,   |      2.3         |
+                |    4, 6, 7        |       5, 6       |                  |                  |       2.4, 4     |                  |
+                |                                                                                                                  |
+                |                                                      Verifier                                                    |
+                |                                                                                                                  |
+                +------------------------------------------------------------------------------------------------------------------+
+            </pre>
+            <figcaption style="text-align: center;">
+                Alignment of Interfaces with functionalities to cover
+            </figcaption>
+        </figure>
+    </section>
+
+    <section data-dfn-for="DID Resolution">
+        <h1>DID Resolution</h1>
+        Standard protocol and considerations for DID Resolution is being defined by a specific working group. <a
+            href="https://w3c-ccg.github.io/did-resolution/">See [DID-RESOLUTION] </a>.
+    </section>
+    <section data-dfn-for="Credential Status">
+        <h1>Credential Status</h1>
+        Standard protocol and considerations for querying the status of the credentials and managing their
+        revocation is being defined by a specific working group. <a
+            href="https://w3c-ccg.github.io/vc-status-rl-2020/">See [VC-STATUS-RL-2020] </a>.
+    </section>
+
+    <section data-dfn-for="Registries">
+        <h2>Registries</h2>
+        <p>
+            Registries managed by the Identity platform governance are needed to:
+        <ol>
+            <li>
+                Discover the credentials available on the Identity platform
+            </li>
+            <li>
+                Manage the format of every credential
+            </li>
+            <li>
+                Stablish the relation between different credentials, taken as attributes to build more complex
+                credentials
+            </li>
+            <li>
+                Define and restrict the entities enabled to assert and validate the information from the subjects
+            </li>
+            <li>
+                Assign different levels of trust to the identity validation processes
+            </li>
+        </ol>
+        </p>
+        <p>
+            Registries of Issuers and Credential Schemas MAY be separated and managed by different entities.
+            Multiple registries of Issuers and/or Schemas MAY be queried by a Verifier.
+        </p>
+        <p>
+            Verifiers MAY make use of internal private registries to complement the public registries.
+            Defining a protocol to merge different registries is outside the scope of this document.
+        </p>
+        <p>
+            Registries SHALL be publicly available and auditable. Persisting registries on DLTs is OPTIONAL but
+            RECOMMENDED as good practice in order to maintain neutrality.
+        </p>
+        <section data-dfn-for="Registry Query">
+            <h3>
+                Registry Query
+            </h3>
+            <p>
+                Registries MUST offer a web interface. REST protocol SHOULD be employed with HTTP Method GET and
+                JSON formatting as default.
+            </p>
+            <p>
+                Registries SHOULD present a unique endpoint to retrieve different entities. The entity SHOULD be
+                selected with either a path or a query parameter. For query parameters, the parameter name MUST be
+                "entity".
+            </p>
+            <p>
+                Entity names MUST be:
+            <ul>
+                <li>
+                    credentialTypes
+                </li>
+                <li>
+                    credentialGroups
+                </li>
+                <li>
+                    authority
+                </li>
+            </ul>
+            </p>
+            <pre class="example" title="Entities on path parameters">
+                    <pre class="http">
+    GET https://registry.org/api/v1/ssiregistry/credentialTypes
+                        GET https://registry.org/api/v1/ssiregistry/credentialGroups
+                        GET https://registry.org/api/v1/ssiregistry/authority
+                    </pre>
+            </pre>
+            <pre class="example" title="Entities on query parameters">
+                        <pre class="http">
+    GET https://registry.org/api/v1/ssiregistry?entity=credentialTypes
+                            GET https://registry.org/api/v1/ssiregistry?entity=credentialGroups
+                            GET https://registry.org/api/v1/ssiregistry?entity=authority
+                        </pre>
+            </pre>
+            <h4>
+                Authentication
+            </h4>
+            <p>Registries SHOULD be public.</p>
+            <p>However, for a better adaptability to business requirements, registries MAY be authenticated.</p>
+            <p>Authentication SHOULD be enforced following current web service standards: on HTTP/HTTPs interfaces,
+                it should be handled with current standard authentication protocols, such as Basic Auth, Bearer
+                tokens, OAuth2.0 or OpenId Connect.</p>
+        </section>
+        <section data-dfn-for="Registry Discovery">
+            <h2>
+                Discovery
+            </h2>
+            <p>
+                To be defined.
+            </p>
+            <p class="ednote">
+                This section should be filled with discovery of registry endpoints for automatic configuration, as
+                well as protocols to discover other registries.
+            </p>
+        </section>
+    </section>
+    <section data-dfn-for="Schema Registry">
+        <h2>Schema Registry</h2>
+        <p>
+            The Schema registry satisfies the needs of managing the credentials available in the platform, with
+            their format and internal relations.
+        </p>
+        <p class="ednote">
+            This definition proposal has tried to unify several credential Catalogs usages or efforts: Gataca Catalog,
+            <a href="https://jolocom-lib.readthedocs.io/en/latest/interactionFlows.html#credential-issuance">Jolocom</a>
+            and<a href="https://identity.foundation/credential-manifest/">DIF's Credential Manifest</a>
+        </p>
+        <h3>
+            Data Model
+        </h3>
+        <section data-dfn-for="Credential Types">
+            <h3>Credential Types</h3>
+            <p>
+                Credential types represent all the types of the different available <b>monoclaim</b> verifiable
+                credentials; each of the types representing each an unique attribute of any credential.
+            </p>
+            <pre class="example">
+                        Credential types represent minimal information: email, first name, last name...
+                    </pre>
+            <p>The usage of monoclaim credentials is required to ensure both:
+            <ul>
+                <li>
+                    Data minimization
+                </li>
+                <li>
+                    Selective disclosure
+                </li>
+            </ul>
+            </p>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    Credential Types MUST have an Id mapping to the most restrictive type of the verifiable
+                    credential. The id MUST be unique on its registry.
+                </dd>
+                <dt>
+                    Name
+                </dt>
+                <dd>
+                    Credential Types MUST have a short description to represent them on a human-readable way.
+                    The name property MUST contain a map with different descriptions depending on the Locale
+                    code.
+                    The name MUST NOT be empty and have at least a default value.
+                </dd>
+                <dt>
+                    Group List
+                </dt>
+                <dd>
+                    Credential Types MUST refer the list of Credential groups where they can be
+                    assessed. The list MUST contain 1 or more groups.
+                    The same attribute MAY be present in more than one group, while its schema MUST be fix
+                    on all those groups.
+                    <pre class="example json">
+                                An attribute credential of type first name could be found in multiple more complex credentials: passports, driver licenses, academic certificates... 
+                            </pre>
+                </dd>
+                <dt>
+                    Schema URI
+                </dt>
+                <dd>
+                    Credential Types SHALL provide a public URL to retrieve their schema on a
+                    machine-readable way. The schema MUST provide the format enforced by the credential,
+                </dd>
+                <dt>
+                    Schema
+                </dt>
+                <dd>
+                    Credential Types MAY have their schema defined. Either the Schema or the Schema URI
+                    properties MUST be defined to validate the credential formats.
+                </dd>
+                <dt>
+                    Description
+                </dt>
+                <dd>
+                    Credential Types MAY have a human readable description to allow external users to understand
+                    the information contained on the credential and how to use it. The description MAY provide
+                    additional information to the description present on the Credential schema.
+                </dd>
+            </dl>
+            <pre class="example" title="Credential Type with Schema">
+                        <pre class="json">
+    {
+                                "groupList": [ "email"],
+                                "id": "emailCredential",
+                                "name": {
+                                    "en": "Email"
+                                },
+                                "schema": "{\"title\":\"JSON Schema for monoclaim verifiable credentials of type emailCredential\",\"required\":[\"credentialSubject\",\"id\",\"issuanceDate\",\"issuer\",\"proof\",\"type\"],\"properties\":{\"credentialSubject\":{\"title\":\"Claims established about the subject defined by his DID.\",\"required\":[\"id\"],\"properties\":{\"id\":{\"title\":\"DID identifier of the subject about whom the claims have been verified\",\"default\":\"\",\"pattern\":\"^did:gatc:[A-Za-z0-9]{32}$\",\"examples\":[\"did:gatc:OWU3ZGRhOGJmYTY1ZjNlODBhZmY4MDgx\"],\"$id\":\"#/properties/credentialSubject/properties/id\",\"type\":\"string\"},\"email\":{\"title\":\"Email address owned by the subject\",\"default\":\"\",\"format\":\"email\",\"examples\":[\"example@example.com\"],\"$id\":\"#/properties/credentialSubject/properties/email\",\"type\":\"string\"}},\"$id\":\"#/properties/credentialSubject\",\"type\":\"object\"},\"credentialStatus\":{\"title\":\"Current status resource of the credential\",\"required\":[\"id\",\"type\"],\"properties\":{\"id\":{\"title\":\"Unique Identifier of the Status Information\",\"default\":\"\",\"pattern\":\"^did:gatc:[A-Za-z0-9]{32}$\",\"examples\":[\"did:gatc:OWU3ZGRhOGJmYTY1ZjNlODBhZmY4MDgx\"],\"$id\":\"#/properties/credentialSubject/properties/id\",\"type\":\"string\"},\"type\":{\"title\":\"Status presentation standard\",\"default\":\"CredentialStatusList2017\",\"enum\":[\"CredentialStatusList2017\"],\"examples\":[\"did:gatc:OWU3ZGRhOGJmYTY1ZjNlODBhZmY4MDgx\"],\"$id\":\"#/properties/credentialSubject/properties/id\",\"type\":\"string\"}},\"$id\":\"#/properties/credentialStatus\",\"type\":\"object\"},\"id\":{\"title\":\"Gataca Verifiable Credential Unique Resource Identifier\",\"default\":\"\",\"pattern\":\"^cred:gatc:[A-Za-z0-9]{32}$\",\"examples\":[\"cred:gatc:MWJmNDk2M2ZlODgwYzIwZTkyZWFjMjY1\"],\"$id\":\"#/properties/id\",\"type\":\"string\"},\"issuanceDate\":{\"title\":\"Credential first issuance date\",\"default\":\"\",\"format\":\"date-time\",\"examples\":[\"2020-05-05T13:45:54Z\"],\"$id\":\"#/properties/issuanceDate\",\"type\":\"string\"},\"issuer\":{\"title\":\"DID Identifier of the first issuer that generated this credential\",\"default\":\"\",\"pattern\":\"^did:gatc:[A-Za-z0-9]{32}$\",\"examples\":[\"did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH\"],\"$id\":\"#/properties/issuer\",\"type\":\"string\"},\"proof\":{\"title\":\"Array of proofs from different DIDs attesting this claim\",\"items\":{\"title\":\"Verifiable Data- Proof\",\"required\":[\"created\",\"creator\",\"proofPurpose\",\"proofValue\",\"type\"],\"properties\":{\"created\":{\"title\":\"Proof creation date\",\"default\":\"\",\"format\":\"date-time\",\"examples\":[\"2020-05-05T13:45:55Z\"],\"$id\":\"#/properties/proof/items/properties/created\",\"type\":\"string\"},\"creator\":{\"title\":\"Proof Signer Key\",\"default\":\"\",\"pattern\":\"^did:gatc:[A-Za-z0-9]{32}\\\\#(.*)$\",\"examples\":[\"did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH#keys-1\"],\"$id\":\"#/properties/proof/items/properties/creator\",\"type\":\"string\"},\"proofPurpose\":{\"title\":\"Purpose enforced by the proof\",\"default\":\"assertionMethod\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"contractAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"examples\":[\"authentication\"],\"$id\":\"#/properties/proof/items/properties/proofPurpose\",\"type\":\"string\"},\"proofValue\":{\"title\":\"Data Signature\",\"default\":\"\",\"pattern\":\"^(.*)$\",\"examples\":[\"SuDU_pRxRud6x-LDpuiSwv0bT9tW41eJR7R9SY4SxOm5jkbnRELXxqd5BqxyRp8d1DIKHgjuwGfAI9ceqDN1DQ\"],\"$id\":\"#/properties/proof/items/properties/proofValue\",\"type\":\"string\"},\"type\":{\"title\":\"Cryptographic signing protocol\",\"default\":\"Ed25519Signature2018\",\"enum\":[\"Ed25519Signature2018\",\"RsaSignature2018\"],\"examples\":[\"Ed25519Signature2018\"],\"$id\":\"#/properties/proof/items/properties/type\",\"type\":\"string\"}},\"$id\":\"#/properties/proof/items\",\"type\":\"object\"},\"$id\":\"#/properties/proof\",\"type\":\"array\"},\"type\":{\"title\":\"Credential Types defining the schemas this credential enforces\",\"items\":{\"title\":\"Credential Type description\",\"default\":\"\",\"enum\":[\"VerifiableCredential\",\"emailCredential\"],\"examples\":[\"VerifiableCredential\"],\"$id\":\"#/properties/type/items\",\"type\":\"string\"},\"$id\":\"#/properties/type\",\"type\":\"array\"}},\"$id\":\"https://gataca.io/verifiableCredentialSchema.json#\",\"type\":\"object\",\"definitions\":{},\"$schema\":\"http://json-schema.org/draft-07/schema#\"}"
+                            }
+                        </pre>
+
+            </pre>
+            <pre class="example" title="Credential Type with Schema URI and description">
+                        <pre class="json">
+    {
+                                "groupList": [ "email"],
+                                "id": "emailCredential",
+                                "name": {
+                                    "en": "Email",
+                                    "es": "Email",
+                                    "fr": "Email"
+                                },
+                                "schemaUri": "https://schema.org/EmailCredential",
+                                "description": "This credential contains a verified email address from the user."
+                            }
+                        </pre>
+
+            </pre>
+        </section>
+        <section data-dfn-for="Credential Groups">
+            <h3>Credential Groups</h3>
+            <p>
+                During an unique process of asserting the Subject's identity it MAY be possible to assert
+                several of the attributes of his identity. Thus, as multiple claims can be stablished from a
+                single process, the monoclaim Verifiable Credentials MUST be grouped into more complex
+                structures, defined as Credential Groups.
+                Credential Groups represent a set of monoclaim credentials bound together in order to build a
+                more complex credential. All those credentials MUST be considered as belonging to the same
+                credential, and their lifecycle managed uniquely.
+            </p>
+            <p>
+                Credentials should be presented however individually. To understand how credentials in groups
+                must be used on presentations, refer to <a href="#presentation-exchange">the following
+                    section</a>
+            </p>
+            <pre class="example json">
+                        Credentials Groups represent complex credentials with multiple claims: drivers license, passport, academic certificate...
+                    </pre>
+            <pre class="example json">
+                        Credentials Groups can represent also a complex credential with a single claim: email, phone number...
+                    </pre>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    Credential Groups MUST have an unique identifier on the registry. The identifier SHOULD represent an
+                    unique process of identity-assertion, generating a complex multi-claim credential, from which one or
+                    more attributes of a subject identity can be extracted.
+                </dd>
+                <dt>
+                    Name
+                </dt>
+                <dd>
+                    Credential Groups MUST have a short description to represent them on a human-readable way, as a
+                    title of the credential.
+                    The name property MUST contain a map with different descriptions depending on the Locale
+                    code.
+                    The name MUST NOT be empty and have at least a default value.
+                </dd>
+                <dt>
+                    Display
+                </dt>
+                <dd>
+                    Credential groups represent complex credentials, human-readable and understandable for users. In
+                    order to allow customization or representation, they MUST contain information about how to represent
+                    them.
+                    <dl>
+                        <dt>
+                            Main Claim
+                        </dt>
+                        <dd>
+                            The main claim MUST represent the Credential Type most representative of the whole
+                            credential group to allow the presentation of its value to the user as a title.
+                            <pre class="example json">
+                                        For a academic certificate credential, the academic degree obtained could be the main claim. 
+                                    </pre>
+                        </dd>
+                        <dt>
+                            Secondary Claim
+                        </dt>
+                        <dd>
+                            The secondary claim MAY represent another Credential Type very representative of the
+                            credential group, to allow the presentation of its value to the user as a subtitle.
+                            <pre class="example json">
+                                        For a academic certificate credential, the academic institution could be a secondary claim. 
+                                    </pre>
+                        </dd>
+                        <dt>
+                            Logo
+                        </dt>
+                        <dd>
+                            The logo property MAY allow identifying a credential with a fixed logo. The logo can be
+                            defined by its URI, its content base64 codified or its svg definition.
+                            <dl>
+                                <dt>
+                                    URI
+                                </dt>
+                                <dt>
+                                    Base64
+                                </dt>
+                                <dt>
+                                    Svg
+                                </dt>
+                            </dl>
+                        </dd>
+                        <dt>
+                            Background
+                        </dt>
+                        <dd>
+                            The background property is OPTIONAL. It MAY be used to enforce a standard representation of
+                            the credential on different Wallets and User Agents.
+                            <dl>
+                                <dt>
+                                    Color
+                                </dt>
+                                <dt>
+                                    URI
+                                </dt>
+                                <dt>
+                                    Base64
+                                </dt>
+                                <dt>
+                                    Svg
+                                </dt>
+                            </dl>
+                        </dd>
+                        <dt>
+                            Text
+                        </dt>
+                        <dd>
+                            The text property is OPTIONAL. It MAY be used to define the presentation format of the text
+                            describing the credential.
+                            <dl>
+                                <dt>
+                                    Color
+                                </dt>
+                                <dt>
+                                    Font Family
+                                </dt>
+                            </dl>
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Description
+                </dt>
+                <dd>
+                    Credential Types MAY have a human readable description to allow external users to understand
+                    the information contained on the credential and how to use it. The description MAY provide
+                    additional information to the description present on the Credential schema.
+                </dd>
+            </dl>
+            <pre class="example" title="Credential Group example">
+                        <pre class="json">
+    {
+                                "id": "university",
+                                "name": {
+                                    "en": "University Qualification",
+                                    "es": "Título Universitario"
+                                },
+                                "description": "This credential group asserts the obtention of an academic degree by a valid academical institution.",
+                                "display":{
+                                    "mainClaim": "qualificationCredential",
+                                    "secondaryClaim": "academicInstitutionCredential",
+                                    "logo":{
+                                        "uri":"https://www.svgrepo.com/show/293955/university.svg"
+                                    },
+                                    "background":{
+                                        "color":"#1025a0"
+                                    },
+                                    "text":{
+                                        "color":"#ffffff"
+                                    }
+                                }
+                            }
+                        </pre>
+            </pre>
+        </section>
+
+    </section>
+    <section data-dfn-for="Issuer Registry">
+        <h2>Issuer Registry</h2>
+        <p>
+            The issuer registry MUST contain all the different institutions that have been attested as valid verifiers
+            of subject's identities.
+        </p>
+
+        <p class="ednote">
+            There doesn't seem to be much standarization effort on defining different issuers.
+        </p>
+        <h3>Trust levels</h3>
+        <p>
+            Governance SHOULD assign different trust levels to the entity asserting the validity of the subject
+            credentials.
+        </p>
+        <p>
+            Three different trust levels have been defined:
+        <table>
+            <tr>
+                <th>
+                    Level
+                </th>
+                <th>Indication</th>
+                <th>Meaning</th>
+            </tr>
+            <tr>
+                <td>
+                    0
+                    </th>
+                <th>Self-attested</th>
+                <th>The credential is asserted by the subject self. No external entity has validated the data.</th>
+            </tr>
+            <tr>
+                <td>
+                    1
+                    </th>
+                <th>Validated</th>
+                <th>The credential is validated by an external entity which has been deemed able to validate that type
+                    of credential. The entity is not the issuer nor of the source of the data verified.</th>
+            </tr>
+            <tr>
+                <td>
+                    2
+                    </th>
+                <th>Issued</th>
+                <th>The credential is validated by the same entity which is the owner or the source of the data
+                    verified.</th>
+            </tr>
+        </table>
+        <pre class="example json" title="Example of Issuer Levels">
+                For a credential of type phone:
+                    * Level 0: The subject could assert his phone number
+                    * Level 1: A validator could verify the possesion of the phone using an OTP.
+                    * Level 2: His phone company could assert the possesion of the phone number associated.
+            </pre>
+        <p class="ednote">
+            eIDas assigns 4 different levels of trust to the data. This model offers a simpler and different approach,
+            regarding the entity validating the data; nor the validation process itself.
+        </p>
+        <p>
+            A same entity could have different Trust levels on the assertion of different credentials
+        </p>
+        <pre class="example json" title="Example of Issuer Levels for the same Issuer">
+                A bank entity could be:
+                    * Level 1 validator of national documents
+                    * Level 2 validator of IBANs of their bank
+            </pre>
+        <p>
+            The trust level of a credential process should apply to credential groups, as the process of asserting
+            identity claims usually applies to complex credentials with more than one claim.
+        </p>
+        </p>
+        <h3>
+            Data Model
+        </h3>
+        <section data-dfn-for="Authority">
+            <h3>Authority</h3>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    Authorities MUST be represented by their unique DID.
+                </dd>
+                <dt>
+                    Name
+                </dt>
+                <dd>
+                    Authorities MUST have a short description to represent them on a human-readable way as a title.
+                    The name property MUST contain a map with different descriptions depending on the Locale
+                    code.
+                    The name MUST NOT be empty and have at least a default value.
+                </dd>
+                <dt>
+                    Display
+                </dt>
+                <dd>
+                    Authorities MAY contain additional display information to provide compliance with their digital
+                    image guidelines.
+                    <dl>
+                        <dt>
+                            Logo
+                        </dt>
+                        <dd>
+                            The logo property MAY allow identifying a credential with a fixed logo. The logo can be
+                            defined by its URI, its content base64 codified or its svg definition.
+                            <dl>
+                                <dt>
+                                    URI
+                                </dt>
+                                <dt>
+                                    Base64
+                                </dt>
+                                <dt>
+                                    Svg
+                                </dt>
+                            </dl>
+                        </dd>
+                        <dt>
+                            Background
+                        </dt>
+                        <dd>
+                            The background property is OPTIONAL. It MAY be used to enforce a standard representation of
+                            the credential on different Wallets and User Agents.
+                            <dl>
+                                <dt>
+                                    Color
+                                </dt>
+                                <dt>
+                                    URI
+                                </dt>
+                                <dt>
+                                    Base64
+                                </dt>
+                                <dt>
+                                    Svg
+                                </dt>
+                            </dl>
+                        </dd>
+                        <dt>
+                            Text
+                        </dt>
+                        <dd>
+                            The text property is OPTIONAL. It MAY be used to define the presentation format of the text
+                            describing the credential.
+                            <dl>
+                                <dt>
+                                    Color
+                                </dt>
+                                <dt>
+                                    Font Family
+                                </dt>
+                            </dl>
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Credential List
+                </dt>
+                <dd>
+                    Every authority MUST have a list of the different groups of credentials whose claims it can
+                    validate.
+                    <dl>
+                        <dt>
+                            Group
+                        </dt>
+                        <dd>
+                            Id of the Credential Group to validate
+                        </dd>
+                        <dt>
+                            Trust Level
+                        </dt>
+                        <dd>
+                            Designated trust level for that authority to that group. The trust level for any authority
+                            MUST be either 1 or 2.
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+            <pre class="example" title="Example of authority">
+                <pre class="json">
+    {
+                        "id": "did:gatc:47bad539a8371e57ebb6370e6ac93bc2dddfa2f2f8a92c632de1e88ce166601f",
+                        "name": {
+                            "en": "Issuer Demo",
+                            "es": "Emisor de prueba"
+                        },
+                        "display":{
+                            "logo":{
+                                "uri":"https://www.svgrepo.com/show/293955/university.svg"
+                            },
+                            "background":{
+                                "color":"#1025a0"
+                            },
+                            "text":{
+                                "color":"#ffffff"
+                            }
+                        },
+                        "credentialList":[
+                            { 
+                                "group": "phone",
+                                "trustLevel": 1
+                            },
+                            { 
+                                "group": "email",
+                                "trustLevel": 1
+                            }
+                        ]
+                    }
+                </pre>
+            </pre>
+        </section>
+    </section>
+
+    <section data-dfn-for="Presentation Exchange" class="informative">
+        <h2>Presentation Exchange</h2>
+        <p>
+            The presentation exchange is the protocol of communication between the Verifier and the Holder to retrieve
+            Verifiable Credentials.
+        </p>
+        <p>
+            The presentation exchange consists on a two step process:
+        <ol>
+            <li>
+                The Holder retrieves a Presentation Request from the verifier.
+            </li>
+            <li>
+                The Holder provides a Presentation Response, containing one or more verifiable presentations to the
+                verifier.
+            </li>
+        </ol>
+        </p>
+        <h3>
+            Obtaining the Presentation Request
+        </h3>
+        <p>
+            A Presentation Exchange takes place when a Service Provider, connected to a Verifier, needs to retrieve
+            Verifiable Credentials from an end user. The user subject MAY store his credentials on a wallet Holder,
+            either on the same or a different User-Agent and device than the Service Provider.
+        </p>
+        <p>
+            To access the Holder on any device, the Verifier MUST offer the user a deep link to retrieve the verifiable
+            presentation.
+        <section data-dfn-for="Deep Link" class="informative">
+            <h3>DeepLink</h3>
+            <p>
+                The deep link MUST use an unique protocol definition: <b>did://</b>. Wallets on different user-agents
+                MAY register to listen to that protocol. The protocol MUST NOT be the same as other existing protocols,
+                even authentication protocols such as <b>openid://</b>, as presentation exchanges cover several use
+                cases apart from authentication.
+            </p>
+
+            <h4>Deep Link format</h4>
+            <p>
+                <code class="http">
+                    did://presentation-exchange?uri=""&jwt=""
+                </code>
+            </p>
+            For presentation exchanges, the deep link should have the following properties:
+            <dl>
+                <dt>
+                    Protocol
+                </dt>
+                <dd>
+                    Permanent: <b>did://</b>
+                </dd>
+                <dt>
+                    Action
+                </dt>
+                <dd>
+                    Permanent: <b>presentation-exchange</b>
+                </dd>
+                <dt>
+                    Parameters. Only one of the two options is required
+                </dt>
+                <dd>
+                    <dl>
+                        <dt>
+                            uri
+                        </dt>
+                        <dd>
+                            OPTIONAL: Base64URL encoding of the URI of the resource to retrieve the presentation request
+                        </dd>
+                        <dt>
+                            jwt
+                        </dt>
+                        <dd>
+                            OPTIONAL: JWT containing the presentation request on JWT format
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+
+
+            <pre class="example" title="Presentation exchange with URI">
+                did://presentation-exchange?uri=aHR0cHM6Ly9jb25uZWN0LmdhdGFjYS5pbzo5MDkwL2FwaS92MS9zZXNzaW9ucy9Ea3N2QTB6bzFDVDR2SjNqbEZKcGMxRjFxejI1OEd1dg
+            </pre>
+
+            <p class="issue">
+                Consider delegating services to allow static deep links
+            </p>
+
+            <p class="ednote">
+                The format of this deep link is for the moment a suggestion. The definition of the deep link protocol
+                may be outside the scope of this document.
+            </p>
+        </section>
+
+        In order to obtain the presentation request, the Verifier should detect the device of the subject compared to
+        the expected Holder and offer two different behaviours:
+        <ul>
+            <li>
+                If same device: trigger the Deep Link and redirect the user to the Holder application.
+            </li>
+            <li>
+                If different device: display a QR to allow breaking the channel. The QR MUST contain the same deeplink
+                to allow any QR Reading applications on the Holder's device to redirect to the Holders Wallet.
+            </li>
+        </ul>
+        <p class="ednote">
+            Other technologies apart from QRs could be used to connect different devices: Bluetooth, Zigbee, NFC
+            technologies... QRs have been chosen as a standard for simplicity and technical availability on the current
+            user technical capacities. The same process of sharing just the generated Deep Link should work
+            independently on the channel chose.
+        </p>
+        <figure>
+            <img src="deeplink_display.png"></img>
+            <figcaption>Deep Link obtention depending on device</figcaption>
+        </figure>
+        <p class="note">
+            Displaying JWT with Deep Links on QRs might result on very big QRs, resulting on qrs difficult to ready or
+            display and lowering user experience. Therefore the use of URIs is RECOMMENDED when displaying QRs.
+        </p>
+        </p>
+        <h3>Model</h3>
+        <section data-dfn-for="Presentation Request">
+            <h3>Presentation Request</h3>
+            <p>
+                The presentation request is a JSON-LD Document to provide a fine-grain definition of which claims are
+                requested by the Verifier, with a strict statement of the purpose for the usage of each piece of
+                information.
+                Claims are mapped to the available Credential Types on the catalog, representing all the possible
+                available attributes.
+            </p>
+            <p class="ednote">
+                There are other presentation exchange efforts. See <a
+                    href="https://identity.foundation/presentation-exchange/"></a>. Those efforts are not considering
+                the assumptions stablished on this document.
+                This proposal is oriented to present a better interface based those assumptions.
+            </p>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    Presentation Requests MUST be uniquely identified. The identifier MUST be used on the Presentation
+                    Response as proof of correspondence to the previous request.
+                </dd>
+                <dt>
+                    Nonce
+                </dt>
+                <dd>
+                    Presentation Requests MUST contain a unique nonce to avoid replay attacks.
+                </dd>
+                <dt>
+                    Callback
+                </dt>
+                <dd>
+                    Verifier domain to forward the corresponding <a href="#presentation-response">Presentation
+                        Response</a>
+                </dd>
+                <dt>
+                    Requested
+                </dt>
+                <dd>
+                    List of <a href="#credential-requests">Credential Requests</a> stablishing the Credential Types from
+                    the catalog needed by the Verifier on the exchange.
+                </dd>
+                <dt>
+                    Proof
+                </dt>
+                <dd>
+                    <p>
+                        Presentation Requests MUST contain a proof (see [[LD-PROOFS]]) to provide mutual authentication.
+                        Proofs must be signed with the Verifier's DID Keys.
+                    </p>
+                    <p>
+                        Proof Purpose MUST be <b>assertionMethod</b>.
+                    </p>
+                    <p>
+                        Proofs MUST contain a <b>challenge</b> to avoid replay attacks.
+                    </p>
+                </dd>
+                <dt>
+                    Auth
+                </dt>
+                <dd>
+                    <p>
+                        List of <a href="#security-mechanisms">Security Mechanisms</a> to be enforced by the Wallet.
+                        Those mechanisms SHALL provide additional security verifications, such as wallet application
+                        authentication or wallet owner.
+                    </p>
+                    <p>
+                        All items on the list MUST be enforced - Logical Conjunction - whereas only one of the accepted
+                        mechanisms stablished for a single item MUST be enforced - Logical disjunction-.
+                    </p>
+                </dd>
+            </dl>
+            <pre class="example" title="Presentation Request Example">
+                <pre class="json">
+                {
+                    "auth": [{
+                        "accepted": ["any"],
+                        "type": "AppAuth"
+                    }, {
+                        "accepted": ["Biometric", "Silent"],
+                        "type": "AuthNFactor"
+                    }],
+                    "callback": "https://connect.dev.gataca.io:9090",
+                    "id": "d2b2e10c-d894-4614-a003-630958ee4a02",
+                    "nonce": "750655b9-dca0-48a6-8508-ad3f947c9d34",
+                    "proof": [{
+                        "challenge": "28BuRkhd4Z9FbXfL4cHTBUk1iL75VtJa",
+                        "created": "2020-11-06T12:48:51Z",
+                        "creator": "did:gatc:22bhyz2xdJbKV2ZLUpedzqXbSoh9Gofw#keys-1",
+                        "domain": "gatacaid.com",
+                        "proofPurpose": "assertionMethod",
+                        "proofValue": "62Q4ZWDlVxyosDINKBvpdhsr_bGOMdpqwtnIHMtkYMv6ViGNtFUAHRN4giyV95SGg93wp9-wDNaK9bcSXLywDQ",
+                        "type": "Ed25519Signature2018"
+                    }],
+                    "requested": [{
+                        "mandatory": true,
+                        "purpose": "authentication",
+                        "trustLevel": 2,
+                        "type": "studentIdCredential"
+                    }, {
+                        "mandatory": false,
+                        "purpose": "application",
+                        "trustLevel": 0,
+                        "type": "lastNameCredential"
+                    }, {
+                        "mandatory": false,
+                        "purpose": "application",
+                        "trustLevel": 0,
+                        "type": "firstNameCredential"
+                    }, {
+                        "mandatory": true,
+                        "purpose": "authentication",
+                        "trustLevel": 2,
+                        "type": "academicInstitutionCredential"
+                    }]
+                }
+                </pre>
+            </pre>
+            <section data-dfn-for="Credential Request">
+                <h4>Credential Request</h4>
+                <p>
+                    Credential Requests define each of the claims needed by the verifier.
+                </p>
+                <dl>
+                    <dt>
+                        Type
+                    </dt>
+                    <dd>
+                        <a href="#credential-types">Credential Type</a>, as defined in the <a
+                            href="#schema-registry"></a>, of each of the specific claims requested. It
+                        MUST be stated for selection on the client side. The schema of the verifiable credential
+                        received will match the stated type.
+                    </dd>
+                    <dt>
+                        Trust Level
+                    </dt>
+                    <dd>
+                        The minimal Trust Level of the verifier of the credential, as defined in the <a
+                            href="#issuer-registry"></a>, MUST be stated to restrict selection on the
+                        Wallet application.
+                    </dd>
+                    <dt>
+                        Mandatory
+                    </dt>
+                    <dd>
+                        Credentials MAY be optionally requested to improve user experience or business applications.
+                        Holders will be able to decide whether including non-mandatory credentials on their presentation
+                        responses.
+                        <p>
+                            Default: <b>false</b>
+                        </p>
+                    </dd>
+                    <dt>
+                        Purpose
+                    </dt>
+                    <dd>
+                        Purpose of the credential that MUST be stated for communication with the User. See section <a
+                            href="#credential-purposes"></a>
+                    </dd>
+                    <dt>
+                        Constraints
+                    </dt>
+                    <dd>
+                        The selection of the credential MAY be restricted on the client side. See section <a
+                            href="#constraints"></a>
+                    </dd>
+                    <pre class="example" title="Example of credential request">
+                    <pre class="json">
+    {
+                            "mandatory": true,
+                            "purpose": "authentication",
+                            "trustLevel": 2,
+                            "type": "studentIdCredential"
+                            "constraints":[
+                                {"eq":{"issuer", "did:gatc:323agw4825u56539d1f"}}
+                            ]
+                        }
+                    </p>
+                    </p>
+                </dl>
+                <section data-dfn-for="Credential Purposes">
+                    <h4>Credential Purposes</h4>
+                    <p>
+                        The credential purpose MUST be adequate to the purpose stated and accepted on the Consent
+                        document.
+                    </p>
+                    <p class="ednote">
+                        Credential purposes SHALL provide support for GDPR and other privacy regulations. Vocabulary
+                        SHOULD be in line with <a href="https://dpvcg.github.io/dpv/">Data Privacy Vocabulary</a>.
+                        <a
+                            href="https://www.w3.org/community/dpvcg/wiki/Purposes_for_handling_Personal_Data#High-level_categories_.28to-be-discussed.29">
+                            The list of all accounted purposes</a> SHOULD be checked to match this document.
+                    </p>
+                    <p>
+                        The purpose of the credential must be graduated, from the most restricted to the least
+                        restricted, depending on the necessity to provide service. Consenting to a higher purpose SHOULD
+                        automatically accept consent to more restrictive purposes.
+                    </p>
+                    <p>
+                        The existing purposes are:
+                    </p>
+                    <ol>
+                        <li>
+                            Identify verification
+                        </li>
+                        <li>
+                            Fraud detection and prevention
+                        </li>
+                        <li>
+                            Access control
+                        </li>
+                        <li>
+                            Service Provision
+                        </li>
+                        <li>
+                            Service Optimization
+                        </li>
+                        <li>
+                            Service Personalisation
+                        </li>
+                        <li>
+                            Marketing
+                        </li>
+                        <li>
+                            Commercial Interests
+                        </li>
+                        <li>
+                            Research & Development
+                        </li>
+                    </ol>
+                    <p>
+                        Purposes MUST always be defined as the most restrictive purpose matching the intended use of the
+                        corresponding claim.
+                    </p>
+                </section>
+                <section data-dfn-for="Credential Constraints">
+                    <h4>Constraints</h4>
+                    <p>
+                        Constraints MAY be used to restrict the selection of the credential to match verifiers needs.
+                        They are intended to improve processes where multiple claims matching the requirements would be
+                        available on the Holder Wallet.
+                    </p>
+                    <p class="note">
+                        Holders MUST be able to handle cases where no credentials matching the specified constraints
+                        -including <b>type</b> and <b>trust level</b> are available.
+                        Considerations or guidelines on User Experience on Wallets are outside the scope of this
+                        document.
+                    </p>
+                    <p>
+                        Constraints MAY be specified using the following format:
+                    <p>
+                        <code class="json">
+                            { "operator1":{"key1":"value2"}, ..., "operatorN":{"keyN":"valueN"}}
+                        </code>
+                    </p>
+                    <p>
+                        On a list of constraints, they would be applied with a Disjuntive Logic -<b>Logical OR</b>-.
+                        Operators on the same contraint are applied with a Conjunctive Logic -<b>Logical AND</b>-.
+                    </p>
+                    <p>
+                        Keys MAY be specified with dot-object notation, refering to any existing property on a
+                        Verifiable Credential.
+                    </p>
+                    <h6>Operators</h6>
+                    One of four possible values:
+                    <ul>
+                        <li>
+                            <b>eq</b>
+                        </li>
+                        <li>
+                            <b>ne</b>
+                        </li>
+                        <li>
+                            <b>ge</b>
+                        </li>
+                        <li>
+                            <b>le</b>
+                        </li>
+                    </ul>
+                    </p>
+                    <pre class="example" title="Applying logic on constraints">
+                        Obtaining credentials issued after 2018 from two possible issuers:
+                        <pre class="json">
+        {
+                                "mandatory": true,
+                                "purpose": "authentication",
+                                "trustLevel": 2,
+                                "type": "studentIdCredential"
+                                "constraints":"constraints":[
+                                    {"eq":{"issuer", "did:gatc:WTKl4E1TdAr0pOiJDvL4aP7slFV7K1aH"}, "ge":{"issuanceDate","2018-01-01T00:00:00"}},
+                                    {"eq":{"issuer", "did:gatc:loDNgbQXa4naoh4Gqr28nHYeObyfvZS8"}, "ge":{"issuanceDate","2018-01-01T00:00:00"}},
+                                ]
+                            }
+                        </pre>
+                    </pre>
+                    <p class="ednote">
+                        Legal validation and compliance SHALL be enforced by the especification of the proof type to
+                        legal compliance types. For instance, <b>eIDAS validation type</b>
+                    </p>
+                    <pre class="example" title="Constraining legal validity via proof type">
+                    <pre class="json">
+        {
+                            "mandatory": true,
+                            "purpose": "authentication",
+                            "trustLevel": 2,
+                            "type": "studentIdCredential"
+                            "constraints":[
+                                {"=":{"proof.type", "EidasValidatedSignature2020"}}
+                            ]
+                        }
+                    </pre>
+                    </pre>
+                </section>
+            </section>
+            <section data-dfn-for="Security Mechanisms">
+                <h4>Security Mechanisms</h4>
+                <section data-dfn-for="Wallet Authentication">
+                    <h4>Wallet Authentication</h4>
+                </section>
+                <section data-dfn-for="AuthNFactor Credentials">
+                    <h4>AuthNFactor Credentials</h4>
+                </section>
+            </section>
+        </section>
+        <section data-dfn-for="Presentation Response">
+            <h3>Presentation Response</h3>
+            <pre class="example" title="Example of Presentation Response">
+            <pre class="json">
+    {
+                    "id": "d2b2e10c-d894-4614-a003-630958ee4a02",
+                    "securityMechanisms": {
+                        "@context": ["https://www.w3.org/2018/credentials/v1"],
+                        "proof": [{
+                            "challenge": "750655b9-dca0-48a6-8508-ad3f947c9d34",
+                            "created": "2020-11-06T12:48:53Z",
+                            "creator": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                            "proofPurpose": "authentication",
+                            "proofValue": "FgFmJVFA6-38np0wG7YxYPgN8zofB_ZX9CVNQhWpFpiVwuxNWvGoj_R3V9PGtJiNRWErrv3rpKhXbayBxzxFCw",
+                            "type": "Ed25519Signature2018"
+                        }],
+                        "type": ["VerifiablePresentation", "GatacaCredentialPresentation"],
+                        "verifiableCredential": [{
+                            "credentialSubject": {
+                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                "publicKey": "BqBaKkzcbwmFq9m89jaGEXRur8XzWssZcns83AV2iQfG",
+                                "receiver": "216a4aeed3536a68"
+                            },
+                            "id": "cred:gatc:MDAyNjA2MTdiNWM0ZWMwNzA1ZjczOTNj",
+                            "issuanceDate": "2020-11-06T08:32:12Z",
+                            "issuer": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH",
+                            "proof": [{
+                                "created": "2020-11-06T08:32:13Z",
+                                "creator": "did:gatc:acYseLtTEVeqF8oBhJEejbCVHJ8auVupaRuo6gw4hmXjcc77uCKqyM3imEJH#keys-1",
+                                "proofPurpose": "authentication",
+                                "proofValue": "BnE9Hjs4yBMCoSRPCfc-s141E-sD0847RHSFsSJ5lGeeC15vAlIjAxaLXN_N7FnKMjIrx-yiIkhLKvTn4XmYCQ",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiableCredential", "silentAuthNFactorCredential"]
+                        }]
+                    },
+                    "verifiablePresentation": {
+                    "@context": ["https://www.w3.org/2018/credentials/v1"],
+                    "proof": [{
+                        "created": "2020-11-06T12:48:57Z",
+                        "creator": "did:gatc:OTk5ZDIxNjEzYjBlNWViN2VlNjRhNTJi#keys-1",
+                        "proofPurpose": "authentication",
+                        "proofValue": "WNYVmiQe8qYqt3z3YNi33E-iNTmxHtLozsZUA3G4YfYTc6mJd70evnoOIBIxY1MMA62q9SjQ6egws7zd5R-UAg",
+                        "type": "Ed25519Signature2018"
+                    }],
+                    "type": ["VerifiablePresentation", "GatacaCredentialPresentation"],
+                    "verifiableCredential": [{
+                            "credentialStatus": {
+                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                "type": "CredentialStatusList2017"
+                            },
+                            "credentialSubject": {
+                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                "studentId": "johnsmith10"
+                            },
+                            "id": "cred:gatc:tqn2onxicmlezcmollcdkmjgyrj53b1x1086",
+                            "issuanceDate": "2020-11-06T11:57:32Z",
+                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                            "proof": [{
+                                "created": "2020-11-06T11:57:32Z",
+                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                "proofPurpose": "authentication",
+                                "proofValue": "1U66hjpO-Ep78fR60ArTxIKjqdnpsSKee1AjQOxtsCmBdfzQbAniBsYFNmWSuexgaxEHYZpXTeTBZpfdxdUZBA",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiableCredential", "studentIdCredential"]
+                            }, {
+                            "credentialStatus": {
+                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                "type": "CredentialStatusList2017"
+                            },
+                            "credentialSubject": {
+                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                                "lastname": "SMITH"
+                            },
+                            "id": "cred:gatc:4npxte79gk55zis44339zast75dq94mjqmyk",
+                            "issuanceDate": "2020-11-06T11:57:32Z",
+                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                            "proof": [{
+                                "created": "2020-11-06T11:57:32Z",
+                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                "proofPurpose": "authentication",
+                                "proofValue": "foHciBH0tBZmIrS6SbI2t3vF6iqvWJFdtfRp6hnsIEGcPqCu27WXLYYNqgMmn2lJaj9nJG91Km-_low_TLf7DQ",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiableCredential", "lastNameCredential"]
+                        }, {
+                            "credentialStatus": {
+                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                "type": "CredentialStatusList2017"
+                            },
+                            "credentialSubject": {
+                                "firstname": "JOHN",
+                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
+                            },
+                            "id": "cred:gatc:0w334gdrx87duqanp1eymfzlcyh22g0ox32z",
+                            "issuanceDate": "2020-11-06T11:57:32Z",
+                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                            "proof": [{
+                                "created": "2020-11-06T11:57:32Z",
+                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                "proofPurpose": "authentication",
+                                "proofValue": "ImRTvgGGbJt-0achi8jGuBtFnulp-KTi7Sp_7q4uSR-QZiEJUeQ7ugmUePCqCI6HMw5LiyMa7zMPB2JFvP35DA",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiableCredential", "firstNameCredential"]
+                        }, {
+                            "credentialStatus": {
+                                "id": "https://certify.dev.gataca.io:9090/api/v1/group/student/status",
+                                "type": "CredentialStatusList2017"
+                            },
+                            "credentialSubject": {
+                                "academicInstitution": "Awesome Technical University",
+                                "id": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl"
+                            },
+                            "id": "cred:gatc:a00loy0pcfkdiq6tx9sburq5a2jl6r1z2icc",
+                            "issuanceDate": "2020-11-06T11:57:32Z",
+                            "issuer": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH",
+                            "proof": [{
+                                "created": "2020-11-06T11:57:32Z",
+                                "creator": "did:gatc:272NzLZEDL67Y2riuAkya9gnXgAicZxH#keys-1",
+                                "proofPurpose": "authentication",
+                                "proofValue": "44DbZZkpwxMshjxH14XlHxzdXL9pC4MbmdJSP7KwKwk-BzK5oSnQpIH2jSYn84GPs1EGdLmbQcVdo-42HaHwBw",
+                                "type": "Ed25519Signature2018"
+                            }],
+                            "type": ["VerifiableCredential", "academicInstitutionCredential"]
+                    }]
+                    }   
+                }
+            </pre>
+            </pre>
+            <section data-dfn-for="Pairwise DIDs">
+                <h4>Pairwise DIDs</h4>
+                <p>
+                    Presentation Responses MUST be signed with a Pairwise DID.
+                </p>
+                <p>
+                    The Presentation Responses MUST be signed with a Pairwise DID.
+                </p>
+                <p>
+                    Revoking the Pairwise DID MUST automatically render invalid any presentation containing signed by it.
+                </p>
+                <p>
+                    For tracing the PairWise DID to the AnyWise DID stated on the subject of the credentials, see <a href="#verifiable-consent"></a>
+                </p>
+            </section>
+        </section>
+        <section data-dfn-for="Consent">
+            <h3>Verifiable Consent</h3>
+            <p>
+                The Verifiable Consent is a [[JSON-LD]] document signed by both parties. It MUST be exchanged prior to sending any <a href="#presentation-response"> Presentation Response</a>.
+            </p>
+            <p>
+                The goal of the consent is cuadruple:
+                <ul>
+                    <li>
+                        Provide support to privacy regulation enforcement.
+                    </li>
+                    <li>
+                        Allow the holder a clear knowledge and traceability of the usage of his credentials.
+                    </li>
+                    <li>
+                        Provide a technical enforcement of the revocation of previous shared data.
+                    </li>
+                    <li>
+                        Add an extra layer of anonimity allowing the usage of PairWise DIDs on <a href="#presentation-response">Presentation Responses</a> while guaranteing the linking to the physical person.
+                    </li>
+                </ul>
+            </p>
+            <p class="ednote">
+                There are other efforts to manage consents. See <a
+                    href="https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/getting-started/index.html">Hiperledger
+                    Indy</a>, <a href="https://protocol.jlinc.org/">JLINC Protocol</a>.
+                Those efforts seem to be either too dependant on the technology stack, either restricted in capabilities compared to the goals of this document.
+            </p>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    <p>
+                        A consent MUST have an unique id representing the relation between the Holder and the Verifier.
+                    </p>
+                    <p>
+                        The consent identifier MUST correspond to PairWise DID of the relation.
+                    </p> 
+                    <p>
+                        The identifier MUST be confirmed by signing the document with the PairWise DID.
+                    </p>                     
+                </dd>
+                <dt>
+                    Approver Subject
+                </dt>
+                <dd>
+                    <p>
+                        The approverSubject MUST refer to a non-repudiable DID from the Subject, that SHOULD be present on the subject of all the credentials shared.
+                    </p>
+                    <p>
+                        The approverSubject MUST be proved by signing the document with one of his private keys.
+                    </p>                    
+                </dd>
+                <dt>
+                    Authorized Entity
+                </dt>
+                <dd>
+                    <p>
+                        The authorizedEntity MUST be stated as the DID requesting the 
+                    </p>
+                    <p>
+                        The authorizedEntity MUST be proved by signing the document with one of his private keys.
+                    </p>                    
+                </dd>
+                <dt>
+                    Claims
+                </dt>
+                <dd>
+                    <p>
+                        Each of the verifiable credentials that have been exchanged between the Holder and the Verifier.
+                    </p>
+                    <p>
+                        The credential content is NOT REQUIRED on the consent, just its identifier. Both the type and the purpose MUST be stated.
+                    </p>                    
+                </dd>
+                <dt>
+                    ProofChain
+                </dt>
+                <dd>
+                    As defined in [[LD-PROOFS]]                    
+                </dd>
+            </dl>
+            <p class="issue">
+                Consider Credential Delegation processes on Consent.
+            </p>
+            <pre class="example" title="Example of Verifiable Consents">
+                <pre class="json">
+                    {
+                        "approverSubject": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl",
+                        "authorizedEntity": "did:gatc:22bhyz2xdJbKV2ZLUpedzqXbSoh9Gofw",
+                        "claims": [{
+                            "credentialId": "cred:gatc:tqn2onxicmlezcmollcdkmjgyrj53b1x1086",
+                            "purpose": "authentication",
+                            "type": "studentIdCredential"
+                        }, {
+                            "credentialId": "cred:gatc:4npxte79gk55zis44339zast75dq94mjqmyk",
+                            "purpose": "application",
+                            "type": "lastNameCredential"
+                        }, {
+                            "credentialId": "cred:gatc:0w334gdrx87duqanp1eymfzlcyh22g0ox32z",
+                            "purpose": "application",
+                            "type": "firstNameCredential"
+                        }, {
+                            "credentialId": "cred:gatc:a00loy0pcfkdiq6tx9sburq5a2jl6r1z2icc",
+                            "purpose": "authentication",
+                            "type": "academicInstitutionCredential"
+                        }],
+                        "id": "did:gatc:OTk5ZDIxNjEzYjBlNWViN2VlNjRhNTJi",
+                        "proofChain": [{
+                            "created": "2020-11-06T12:48:58Z",
+                            "creator": "did:gatc:OTk5ZDIxNjEzYjBlNWViN2VlNjRhNTJi#keys-1",
+                            "proofPurpose": "nonRepudiation",
+                            "proofValue": "7zf4bX99NnmJ-VIfV7SGoKk092Vqb_mTBwHqpO3o4WLIZy2SByjVorVNOOa0GjkzoTCiKN-Nh4SiLuCAyqwrCQ",
+                            "type": "Ed25519Signature2018"
+                        },
+                        {
+                            "created": "2020-11-06T12:48:58Z",
+                            "creator": "did:gatc:YjcwNDgzMWU1ODA0ZmU2NDU0MjU0YzNl#keys-1",
+                            "proofPurpose": "nonRepudiation",
+                            "proofValue": "mkQ1zTl5Lw25m1pXKo1pTnGLeV_L7pqC5oPqlA0JCxOMWq5VIFg2KeORACv-SuOmCBsxZKaRg7MBeqYIBU9iyY",
+                            "type": "Ed25519Signature2018"
+                        },
+                        {
+                            "created": "2020-11-06T12:49:12Z",
+                            "creator": "did:gatc:22bhyz2xdJbKV2ZLUpedzqXbSoh9Gofw#keys-1",
+                            "proofPurpose": "nonRepudiation",
+                            "proofValue": "8zb45X9NxmG-3jl6vgUXcAimLfu7o53N9Pt17-DksvA0zom2w2m2w2DOd18qh42mkyFNGvxzLk91udO61Ptvu2",
+                            "type": "Ed25519Signature2018"
+                        }
+                        ]
+                    }
+                </pre>
+            </pre>
+        </section>
+        <h3>Enforcing Consent</h3>
+        <p>
+            Presentation responses MUST be signed with a PairWise DID with the same Id of the Verifiable Consent.
+        </p>
+        <p>
+            A Verifier MUST possess a consent with the ID of a Pairwise DID before receiving a Presentation Response signed by that DID.
+        </p>
+        <p>
+            A Verifier receiving a <a href="#presentation-response"></a> from a Pairwise DID from which he does not possess the consent MUST NOT be able to assert the relation between the Subject of the credentials and the signer of the presentation.
+            Those presentations MUST then be considered invalid.
+        </p>
+        <p class="note">
+            Intercepting, inspecting or receiving one or more Presentation Responses is not a valid proof of relation between a Holder and a Verifier without access to the Verifiable Consent.
+        </p>
+        <p>
+            Consents SHALL be modified or revoked by any of the two parties. 
+        </p>
+        
+        <h3>Consent Exchange Protocol</h3>
+        <p>
+            Upon receiving a Presentation Request from a Verifier from which no previous relation has been stablished, before generating the presentation response, it is the duty of the Holder to create a new Verifiable Consent based on both:
+            <ul>
+                <li>
+                    The Credential Requests stated by the Verifier
+                </li>
+                <li>
+                    The Verifiable Credentials selected by the Holder
+                </li>
+            </ul>
+        </p>
+        <p>
+            The Verifiable Consent must the be signed twice by the Holder, first with the Pairwise DID and then the Anywise DID.
+        </p>
+        <p>
+            The Consent MUST then be sent to the Verifier domain stated on the Presentation Request.
+            The sharing of the message SHOULD be done using an HTTP POST request to the specific path <b>/api/v1/consents</b>.
+            <pre class="http">
+                <code class="http">
+                    POST /api/v1/consents HTTP/1.1
+                    Host: $presentationRequest.callback
+                    Content-Type: application/json
+
+                    {
+                        //Verifiable consent ...
+                    }
+                </code>
+            </pre>
+        </p>
+        <p>
+            The Verifier MUST respond either:
+                <ul>
+                    <li>
+                        With the same Consent signed with his DID
+                    </li>
+                    <li>
+                        With a 400 error if detecting an invalid process.
+                    </li>
+                </ul>
+        </p>
+        <p>
+            Only after having received and stored a consent signed by the Verifier SHALL the Holder respond to the Presentation Request with a Presentation Response.
+        </p>
+        <figure>
+            <div class="mermaid">
+                sequenceDiagram
+                    Verifier->>Holder: Presentation Request
+                    Holder-->>Holder: Previous consent for this verifier?
+                    opt No previous Consent
+                        Holder-->>Holder: Select adequate credentails
+                        Holder-->>Holder: Create new consent
+                        Holder-->>Holder: Sign new consent
+                        Holder->>+Verifier: Send signed consent
+                        Verifier ->>-Holder: Return signed consents
+                        Holder-->>Holder: Store signed consent
+                    end
+                    Holder ->>Verifier: Presentation Response
+                    Verifier ->>Verifier: Previous consent for this Pairwise DID
+                    alt Existing Consent
+                        Verifier->>Verifier: Verify presentation
+                    else 
+                        Verifier->>Verifier: Invalid presentation
+                    end
+              </div>
+            <figcaption>Consent Exchange Protocol</figcaption>
+        </figure>
+        <p class="issue">
+            Allow configuration and discovery of non-standard paths for exchanging consents.
+        </p>
+        <h3>Consent Modification Protocol</h3>
+        <p>
+            
+        </p>
+        <p class="ednote">
+            This section is still to be defined
+        </p>
+    </section>
+    
+    
+    <section id="tof"></section>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+</body>
+
+</html>
