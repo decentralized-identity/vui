@@ -1709,10 +1709,10 @@
             </pre>
             <p>
                 The Presentation Response MUST be sent to the Verifier domain stated on the Presentation Request.
-                The sharing of the message SHOULD be done using an HTTP POST request to the specific path <b>/api/v1/sessions</b>.
+                The sharing of the message SHOULD be done using an HTTP POST request to the specific path <b>/api/v1/presentations</b>.
                 <pre class="http">
                     <code class="http">
-                        POST /api/v1/sessions HTTP/1.1
+                        POST /api/v1/presentations HTTP/1.1
                         Host: $presentationRequest.callback
                         Content-Type: application/json
     
