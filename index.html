@@ -99,37 +99,48 @@
 
     <section id="abstract">
         <p>
-            Decentralized digital identity, or "self-sovereign" identity (SSI), is a new paradigm proposed for managing
-            digital identities. Relying on Decentralized identifiers (DIDs) and Verifiable Credentials (VC), the subject
-            and his personal credentials are independent from any centralized registry,
+            Decentralized Identity (DeID) or "self-sovereign" identity (SSI), is a new paradigm proposed for managing
+            digital identities. By relying on <a href="hhttps://www.w3.org/TR/did-core/">Decentralized identifiers (DIDs) </a> 
+            and <a href="https://www.w3.org/TR/vc-data-model/">Verifiable Credentials (VC)</a>, a user or entity
+            and their identity credentials are independent from any centralized registry,
             identity provider, or certificate authority.
         </p>
         <p>
-            On the Decentralized Identity model, the role associated to requesting and verifying credentials is
-            defined as the Verifier.
+            On the Decentralized Identity model, the role associated to an entity receiving VCs for verification and
+            processing purposes is defined as the Verifier. We will refer to Verifier component as the software
+            component that implements the functionalities required by a Verifier. 
         </p>
         <dd>
-            The verifier functionality is to support the data collector as it tries to acquire credentials from some
-            other party for the purpose of negotiating a business transaction. It does so by creating presentation
-            requests (or Presentation Definition as it is called in the draft DIF specfication for Presentation
-            Exchange) that ask for such credentials, sending them to a holder component of another party, receiving
-            a
-            response to such a request (which we call a 'presentation'), verifying the presentation, i.e. checking
-            the
-            signature and other proofs of the veracity of both the construction of the presentation as well as its
-            contents, thus providing the party with verified data.
-
+            The objective of a Verifier component is to support the Verifier to collect and verify VCs from a subject for the
+            purpose of executing a transaction. It does so by:
+            <ol class="oplist">
+                <li>
+                    creating Presentation Requests (or Presentation Definition as defined in the <a
+                    href="https://identity.foundation/presentation-exchange/draft">DIF specfication for Presentation
+                    Exchange</a>) that includes de number and type of VCs needed for the transaction
+                </li>
+                <li>
+                    sending the Presentation Request to the VC's holder
+                </li>
+                <li>
+                    receiving requested VCs wrapped in a Presentation, verifying that they match the number and type
+                    specified in the Presentation Request
+                </li>
+                <li>
+                    verifying the signature and any other proofs of the veracity of both the Presentation and its
+                    included VCs
+                </li>
+            </ol>
         </dd>
 
         <p>
-            This document specifies the algorithms, protocols and guidelines to be implemented by any Verifier willing
-            to provide SSI functions.
+            This document proposes a set of APIs to be implemented by any Verifier component willing to interoperate in
+            the DeID ecosystem. This set of APIs is hereafter referred as Verifier Open Protocol.
         </p>
 
         <p class="ednote">
-            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
-            propose an open verifier protocol. This format is however extremely adequate to allow to work and contribute
-            on the protocol definition.
+            Despite its format, this document is not a draft work related to the W3C. This format is however extremely
+            adequate to enable collaboration and contribution to the definition of open protocols in the DeID space.
         </p>
     </section>
     <section id="sotd">
@@ -138,14 +149,16 @@
     <section data-dfn-for="Context">
         <h1>Context</h1>
         <p>
-            As different technology providers are offering SSI Solutions, it becomes a relevant matter to ensure
-            interoperability between those providers. On a not yet stable market, most providers aim to offer the whole
-            SSI stack: components for holders, verifiers, issuers and did-resolver.
+            As different technology providers are building DeID solutions, it becomes a relevant matter to ensure
+            interoperability between those solutions. In an inmature market with lack of atomized, interoperable
+            components, many providers opt to build the entire DeID stack: components for holders, verifiers, issuers
+            and a did-resolver that work as whole, but do not interoperate with other components.
         </p>
         <p>
-            In order to avoid vendor lock-ins, the APIs exploited by the Verifiers component can be standarized. This
-            document aims to offer the sufficient capabilities for a Verifier component of some technology provider to
-            use the technology stack of another SSI provider.
+            In order to avoid vendor lock-in situations and guarantee an interoperable DeID layer for the Internet, the
+            APIs exploited by Verifier components SHALL be standarized. This document aims to propose a set of open API
+            that provide sufficient capabilities for a Verifier component, while enabling integration with components of
+            another DeID provider. It exploits existing work currently done at w3c-ccg, DIF, and other DeID communities.
         </p>
         <section id="conformance">
         </section>
@@ -160,6 +173,8 @@
                 <dd>As defined in [[DID-RESOLUTION]].</dd>
                 <dt><dfn data-lt="DID resolver's">DID resolver</dt>
                 <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="Verifier">Verifier</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
                 <dt><dfn data-lt="VC|Verifiable Credential">Verifiable Credential</dfn> (VC)</dt>
                 <dd>As defined in [[VC-DATA-MODEL]].</dd>
                 <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
@@ -182,16 +197,16 @@
                     in a Verifiable Presentation)
                 </li>
                 <li>
-                    Verify received VCs. That includes:
+                    Verify received VCs. This includes:
                     <ol>
                         <li>
-                            Verify the proofs of every credential
+                            Verify the proofs of every VC
                         </li>
                         <li>
-                            Verify the proof of the presentation
+                            Verify the proof of the Presentation
                         </li>
                         <li>
-                            Verify that the information received matches the information requested
+                            Verify that VCs received match VCs requested
                         </li>
                     </ol>
                 </li>
@@ -201,13 +216,13 @@
             Additionally, any Verifier SHALL perform the following operations:
             <ol start="2" class="oplist start2">
                 <li>
-                    While verifying the received VCs:
+                    While verifying each VC:
                     <ol start="4" class="oplist start4">
                         <li>
-                            Verify the Issuer of the credential
+                            Verify the Issuer of the VC
                             <ol class="oplist">
                                 <li>
-                                    Its authority over the credential
+                                    Its authority over the VC
                                 </li>
                                 <li>
                                     Its associated trust level
@@ -215,30 +230,30 @@
                             </ol>
                         </li>
                         <li>
-                            Verify the status of every credential
+                            Verify the status of the VC
                         </li>
                         <li>
-                            Verify and match the ownership of the Verifiable Credentials and the Verifiable Presentation
+                            Verify and match the ownership of the VC and its Verifiable Presentation
                         </li>
                         <li>
-                            Verify that all credentials can be linked to the same entity
+                            Verify that all VCs can be linked to the same holder
                         </li>
                         <li>
-                            Verify that the credentials requested satisfy some stablished constraints
+                            Verify that the VC satisfies some established constraints
                         </li>
                     </ol>
                 </li>
                 <li>
-                    Verify that the credentials have been handled from a secure wallet
+                    Verify that the Verifiable Presentation has been sent from a secure wallet
                 </li>
                 <li>
                     Authenticate the wallet owner
                 </li>
                 <li>
-                    Manage the consent of the usage of the information inside the credentials
+                    Manage the consent on the purpose of use for each VC
                 </li>
                 <li>
-                    Ensure user anonimity and non external traceability
+                    Ensure user non external traceability and ensure anonimity
                 </li>
                 <li>
                     Manage selective disclosure of the information contained on the credentials
@@ -249,39 +264,54 @@
         </section>
         <section data-dfn-for="Assumptions">
             <h2>Assumptions</h2>
-            The are several posible perspectives and solutions for different SSI Models. This Verifier APIs propose a
-            protocol under some strict assumptions. Those conditions can be justified for the sake of simplicity and
+            The are assorted perspectives and solutions for DeID models. This Verifier Open Protocol propose a
+            set of APIs under some strict assumptions and conditions, justified for the sake of simplicity and
             conformance with current regulation.
             <dl>
                 <dt>
-                    DLT Agnosticity
+                    DLT Agnosticity 
                 </dt>
                 <dd>
-                    DID Models rely on different DLTs to store DID Documents, as well as other elements or documents
-                    from the SSI Model. No solution depending on a specific DLT (or blockchain application, or
-                    technology provider) shall be considered. The DLT MAY be used exclusively as a decentralized Public
-                    Key Infrastructure to verify cryptographic signatures of elements.
+                    DID methods may rely on different DLTs to store DID Documents, as well as other elements or
+                    documents necessary in a DeID ecosystem. As such, no solution that depends on a specific DLT shall
+                    be considered. DLTs MAY be exclusively used as a decentralized Public Key Infrastructure to
+                    verify cryptographic signatures of elements.
+                </dd>
+                <dt>
+                    DLT as DKPI 
+                </dt>
+                <dd>
+                    While some technology providers may use DLTs to register assorted documents or information other
+                    than DIDs and associated public keys (e.g. credential status, issuance proofs, or issuer
+                    registries), DLTs MAY be exclusively used as a decentralized Public Key Infrastructure. As such the
+                    Verifier Open Protocol MUST allow the processing of information other than DIDs and DID Document
+                    components in alternative technologies.
                 </dd>
                 <dt>
                     Identity Governance
                 </dt>
                 <dd>
-                    There SHALL be a party responsible on reviewing and defining which information can be securely
-                    attested by different providers. In order to comply with regulation, Issuers shall be known and
-                    registered along with the information that can be validated by each of them.<br>
-                    There MUST be accessible registries to find the credentials and issuers available.
+                    There SHALL be a party responsible for reviewing and defining which information can be
+                    attested by different Issuers. In order to comply with regulation, Issuers shall be known and
+                    registered along with their allowed Verifiable Credential schemas <br>
+                    There MUST be accessible registries to find available Issuers and Credential Schemas.
                 </dd>
                 <dt>
                     Monoclaim credentials
                 </dt>
                 <dd>
-                    In order to ensure data minimization and allow selective disclosure, all the verifiable credentials
-                    handled on both presentation requests and verifiable presentations MUST be monoclaim.<br>
-                    A monoclaim credential is a credential containing no more than the subject of the credential and a
-                    single attribute of his identity. No credential can contain more than one attribute. The format of
-                    that attribute is however free to be defined.<br>
-                    Different attributes strictly related between them, or belonging to a bigger credential, MAY be
-                    grouped into credential groups.
+                    In order to ensure data minimization and allow selective disclosure, all VCs
+                    handled on both Presentation Requests and Verifiable Presentations MUST be monoclaim.<br>
+                    A monoclaim VC is a credential containing no more than the subject of the credential and a single
+                    claim. No credential can contain more than one claim. The format of that claim MAY be however freely
+                    defined.<br>
+                    Different claims strictly related among them, or belonging to a single conceptual Credential MAY be
+                    grouped into a Credential Group. For instance, Street Address, ZIP Code, City, and Country MAY be
+                    grouped into a Credential Group type PhysicalAddress. Alternatively, these attributes could also be considered as a
+                    as single claim wrapped in a monoclaim VC. However, this alternative would not allow for selective
+                    disclosure; that is, to share only the ZIP code without revealing the entire physical address.<br>
+                    This condition is established due to the lack of legal support (as of the date if this document) for
+                    Zero Knowledge Proof techniques to implement selective disclosure in multi-claim VCs.
                 </dd>
             </dl>
         </section>
@@ -289,17 +319,16 @@
     <section data-dfn-for="Interfaces" class="informative">
         <h1>Interfaces</h1>
         <p>
-            In order to allow Verifier operation as decribed in <a href="#verifier-operations">the previous section</a>,
-            this
-            document proposes a definition of the Interfaces between the Verifier and other components.
+            In order to allow Verifier operations as decribed in <a href="#verifier-operations">the previous section</a>,
+            this document proposes a definition of the Interfaces between the Verifier and any other DeID component.
         </p>
         <p>
-            Those interfaces MUST be independent from any framework or programming language. Interfaces shall be
+            These interfaces MUST be independent from any framework or programming language. Interfaces shall be
             implemented with standard communication protocols through web services. Usage of REST is recommended.
         </p>
 
-        Depending on the party to interact and the functionality described to cover, a Verifier SHALL make use of the
-        following defined interfaces for his operation:
+        A Verifier component SHALL make use of one or more of the following interfaces depending on the DeID component
+        it wants to interact with:
         <figure id="api-functional-alignment">
             <pre class="json">
                  +------------------------------------++------------------------------------++-----------------++-----------------+
@@ -307,23 +336,24 @@
                  +------------------------------------++------------------------------------++-----------------++-----------------+
                 +------------------------------------------------------------------------------------------------------------------+ 
                 |+-----------------++-----------------++-----------------++-----------------++-----------------++-----------------+|
+                ||       API       ||       API       ||       API       ||       API       ||       API       ||      API        ||
                 ||                 ||                 ||                 ||                 ||                 ||                 ||
                 || Presentation    || Consent         || Schema Registry || Issuer Registry || DID Resolution  || Credential      ||
                 || Exchange        || Management      || Query           || Query           ||                 || Status          ||
                 ||                 ||                 ||                 ||                 ||                 || Query           ||
                 ||                 ||                 ||                 ||                 ||                 ||                 ||
                 ||                 ||                 ||                 ||                 ||                 ||                 ||
-                ||       API       ||       API       ||       API       ||       API       ||       API       ||      API        ||
                 ++-----------------++------------------------------------++-----------------++-----------------++-----------------++
+                |                                                  Verifier Operations                                             |
+                |+-----------------++-----------------++-----------------++-----------------++-----------------++-----------------+|
                 |   1, 2.3, 3,      |     2.6, 2.7,    |       2.6, 7     |      2.2         |      2.1, 2.2,   |      2.3         |
-                |    4, 6, 7        |       5, 6       |                  |                  |       2.4, 4     |                  |
-                |                                                                                                                  |
-                |                                                      Verifier                                                    |
+                |    4, 6, 7        |       5, 6       |                  |                  |       2.4, 4     |                  |              
                 |                                                                                                                  |
                 +------------------------------------------------------------------------------------------------------------------+
             </pre>
             <figcaption style="text-align: center;">
-                Alignment of Interfaces with functionalities to cover
+                Set of Open Interfaces for a Verifier Component and associated <a href="#verifier-operations">Verifier
+                Operations</a> they implement.
             </figcaption>
         </figure>
     </section>
@@ -1525,7 +1555,7 @@
                         </p>
                     </p>
                     <p class="ednote">
-                        Specific AuthNfactor credentials shall be defined on different wallets and SSI technology stacks.
+                        Specific AuthNfactor credentials shall be defined on different wallets and DeID technology stacks.
                         The listing of all the possible AuthNFactor types, as well as its management and discovery, is outside the scope of this document.
                     </p>
                 </section>
@@ -1562,7 +1592,7 @@
                         Non-mandatory credentials MAY not be present on the Verifiable Presentation.
                     </p>
                     <p class="note">
-                        The process of building a digital identity should be implemented by linking a growing number of proved claims to a single identifier. However, it is possible for a single subject to possess multiple DIDs -for instance on multiple SSI platforms-.
+                        The process of building a digital identity should be implemented by linking a growing number of proved claims to a single identifier. However, it is possible for a single subject to possess multiple DIDs -for instance on multiple DeID platforms-.
                         Being able to trace and assert the relation of various DIDs to a single subject is an authentication need outside the scope of this document.
                     </p>
                 </dd>
