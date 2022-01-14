@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+    <script src="./common.js"></script>
+    <script class="remove">
+        // All config options at https://respec.org/docs/ 
+        var respecConfig = {
+            specStatus: "unofficial",
+            editors: [
+                {
+                    name: "José San Juan",
+                    mailto: "it@gataca.io"
+                },
+            ],
+            github: "gataca-io/vui-specs",
+            shortName: "vui-data-agreements",
+            xref: "web-platform",
+            group: "Verifier Universal Interfaces",
+            localBiblio: ccg.localBiblio,
+            logos: [
+                {
+                    src: "https://cdn2.hubspot.net/hubfs/4728390/GATACA_ISOTYPE_GRADIENT.png",
+                    url: "https://gataca.io",
+                    alt: "GATACA",
+                    width: 100,
+                    height: 100,
+                    id: "gataca-logo",
+                },
+            ],
+        };
+    </script>
+    <style>
+        .oplist {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .oplist:first-of-type {
+            counter-reset: item;
+        }
+
+        .start2 {
+            counter-set: item 1;
+        }
+
+        .start4 {
+            counter-set: item 3;
+        }
+
+        .oplist>li {
+            display: table;
+            counter-increment: item;
+            margin-bottom: 0.6em;
+        }
+
+        .oplist>li:before {
+            content: counters(item, ".") ". ";
+            display: table-cell;
+            padding-right: 0.6em;
+        }
+
+        li .oplist>li {
+            margin: 0;
+        }
+
+        li .oplist>li:before {
+            content: counters(item, ".") " ";
+        }
+
+        table {
+            border-collapse: collapse;
+            border-width: 1px;
+        }
+
+        table td,
+        table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title">Data Agreements</h1>
+    <h2 id="subtitle">Definition of the standards managing the lifecycle of Data Agreements for usage of the verifiable
+        credentials under the <a>Verifier Universal Interface</a> protocol, as well as its relations with other
+        protocols in VUI.
+    </h2>
+
+    <section id="abstract">
+        <p>
+            Data usage and data sharing is a major concern in every digital service provided. Regulation has increased
+            according to users needs for the last decade.
+        </p>
+        <p>
+            On the Decentralized Identity model, there is no current support to the managing of the data. Considering
+            the user experience perspective, as well as his rights and the service provider risk assessment and data
+            management processes, a specific protocol to agree on the usage of verifiable credentials might be very
+            attractive to most verifiers.
+        </p>
+        <dd>
+            This document proposes a specific Data Model to manage data agreements. It also defines a basic protocol and
+            the
+            mechanisms to embed it inside a <a>Presentation Exchange</a>, which could be supported by multiple exchange
+            standards.
+        </dd>
+
+        <p class="ednote">
+            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
+            offer a new protocol appliable to know SSI frameworks to improve the management of data.
+            The extensions caused on other protocols shall be discussed and included if considered deemed.
+        </p>
+    </section>
+    <section id="sotd">
+        <p> </p>
+    </section>
+    <section data-dfn-for="Context">
+        <h1>Context</h1>
+
+        <p>
+            Regarding standarization efforts on enforcing a technical consent on the usage of Verifiable Credentials,
+            there seems to be a gap that hasn't been filled yet.
+        </p>
+        <p>
+            The <i>Consent & Information Sharing Work Group</i> at <a href="https://kantarainitiative.org/">Kantara</a>
+            has been working on a generic <a>Consent Receipts</a> specification that could apply to any digital service.
+            The ISO organization has also provided some guidelines and is working on the subject:
+        <ul>
+            <li>
+                ISO/IEC 29184: 2020: Information Technology - Online Privacy Notices and Consent (Published, available
+                at
+                https://www.iso.org/standard/70331.html)
+            </li>
+            <li>
+                ISO/IEC TS 27560 — Privacy technologies — Consent record information structure (Not published yet)
+            </li>
+        </ul>
+        </p>
+        <p>
+            In the context of SSI frameworks however, some organizations could have proprietary implementations of
+            consent mechanisms, such as <a>Verifiable
+                Consents</a>; but no standard has received major adherence.
+        </p>
+        <p>
+            In the context of the EssifLab, the <a>Automated Data Agreement</a> project has been created. It builds upon
+            Kantara <a>Consent Receipts</a> to allow a data privacy mechanisms to be enforced in the framework of
+            Hyperledger Aries.
+        </p>
+        <p>
+            The benefits of <a>Automated Data Agreement</a> in the management of <a>
+                DPIA
+            </a> are presented in [[ADA]]. This kind of protocol could even be integrated in automation tools to manage
+            a company's <a>DPIA</a>.
+        </p>
+        <p>
+            This document will try to offer an adaptation, built upon both <a>Automated Data Agreements</a> and Kantara
+            <a>Consent Receipts</a>, of those same data privacy mechanisms in the context of the Verifier Universal
+            Interface. That is, trying to avoid specific technical solutions and in comunion to other related interfaces
+            such as the <a>Presentation Exchange</a>.
+        </p>
+        <section id="conformance">
+        </section>
+        <section id="terminology">
+            <h2>Terminology</h2>
+            <dl>
+                <dt><dfn data-lt="DID|<a>DIDs</a>|decentralized identifiers">Decentralized Identifier</dfn>
+                    (DID)</dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID document</dfn></dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID resolution</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="DID resolver's">DID resolver</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="VC|Verifiable Credential">Verifiable Credential</dfn> (VC)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="LD PROOFS|Proofs|Linked Data Proofs">Linked Data Proofs</dfn></dt>
+                <dd>As defined in [[LD-PROOFS]].</dd>
+                <dt><dfn data-lt="DIF Presentation Exchange|Presentation Exchange">Presentation Exchange</dfn></dt>
+                <dd>As defined in [[VUI-PRESENTATION-EXCHANGE]]</a></dd>
+                <dt><dfn data-lt="Presentation Definition">Presentation Definition</dfn></dt>
+                <dd>As defined in [[VUI-PRESENTATION-EXCHANGE]]</dd>
+                <dt><dfn data-lt="Presentation Submission">Presentation Submission</dfn></dt>
+                <dd>As defined in [[VUI-PRESENTATION-EXCHANGE]]</dd>
+                <dt><dfn data-lt="DPIA|DPIAs">Data Protection Impact Assessments</dfn> (DPIA)</dt>
+                <dd>As defined in <a href="https://gdpr.eu/data-protection-impact-assessment-template/">GDPR - DPIA</a>
+                </dd>
+                <dt><dfn data-lt="Data Agreement|Automated Data Agreement">Data Agreement</dfn></dt>
+                <dd>As defined in [[ADA]]</dd>
+                <dt><dfn data-lt="Data Agreement Template">Data Agreement Template</dfn></dt>
+                <dd>See <a href="#data-agreement-template"> Data Model</a></dd>
+                <dt><dfn data-lt="Data Agreement Record">Data Agreement Record</dfn></dt>
+                <dd>See <a href="#data-agreement-record"> Data Model</a></dd>
+                <dt><dfn data-lt="Consent Receipts">Consent Receipts</dfn></dt>
+                <dd>As defined in [[KANTARA-CONSENTS]]</dd>
+                <dt><dfn data-lt="Verifiable Consents">Verifiable Consents</dfn>(VCON)</dt>
+                <dd>As defined in [[VERIFIABLE-CONSENTS]]</dd>
+                <dt><dfn data-lt="JSON-LD">JSON-LD</dfn></dt>
+                <dd>As defined in [[JSON-LD]]</dd>
+                <dt><dfn data-lt="VUI|Verifier Universal Interface">Verifier Universal Interface</dfn>(VUI)</dt>
+                <dd>As defined in [[VUI]]</dd>
+
+            </dl>
+        </section>
+    </section>
+    <section data-dfn-for="Data Model">
+        <h1>Data Model</h1>
+
+        <p>
+            The data model aims to port the specifications of
+            Kantara <a>Consent Receipts</a> and <a>Automated Data Agreements</a> to have a base Data Agreement structure
+            that could be used on any SSI framework.
+        </p>
+
+        <p>
+            The <a>Data Agreement</a> represents all the information shared between a Holder and a Verifier in order
+            to enjoy a given Digital Service.
+        </p>
+
+
+        <h2>
+            JSON-LD
+        </h2>
+
+        <p>
+            JSON-LD is a JSON-based format used to serialize Linked Data.
+        </p>
+        <p>
+            The JSON-LD representation defines the following representation-specific entries:
+        </p>
+        <dl>
+
+            <dt>
+                @context
+            </dt>
+            <dd>
+                The JSON-LD Context is either a string or a list containing any combination of strings and/or ordered
+                maps.
+            </dd>
+        </dl>
+
+
+        <section data-dfn-for="Data Agreement Template">
+            <h2>Data Agreement Template</h2>
+
+            <p>
+                The Data Agreement Template is the base model to generate a <a>Data Agreement</a>.
+                It MAY be offered by the Verifier to the Holder at the initiation of a <a>Presentation Exchange</a>.
+            </p>
+            <p>
+                Its contents MUST match the presentation definition to be processable
+            </p>
+
+            <h3>Properties</h3>
+            <dl>
+                <dt>
+                    Template Id
+                </dt>
+                <dd>
+                    The template id references univocally the <a>Data Agreement Template</a>. It SHOULD be linked to a
+                    specific presentation definition.
+                </dd>
+                <dt>
+                    Template Version
+                </dt>
+                <dd>
+                    The template version allows to keep tracking of updates on the Data Agreement template.
+                    <br>
+                    Holders MUST use the version to determine if they need to perform changes on an existing Data
+                    Agreement Record
+                </dd>
+                <dt>
+                    Data Receiver
+                </dt>
+                <dd>
+                    <p>
+                        The data receiver MUST inform the user of all the information about the service provided and the
+                        usage of the data.
+                    </p>
+                    <dl>
+                        <dt>
+                            Id
+                        </dt>
+                        <dd>
+                            <a>DID</a> associated to the service provider
+                        </dd>
+                        <dt>
+                            Name
+                        </dt>
+                        <dd>
+                            Name of the Service Provider to inform the Holder
+                        </dd>
+                        <dt>
+                            Service
+                        </dt>
+                        <dd>
+                            OPTIONAL: Description of the service that will make use of the data
+                        </dd>
+                        <dt>
+                            URL
+                        </dt>
+                        <dd>
+                            Base URL of the digital service provided to interact along the lifecycle of the data
+                            agreement
+                        </dd>
+                        <dt>
+                            Consent Duration
+                        </dt>
+                        <dd>
+                            Default duration of the data agreement if no further operations happen. After expiration,
+                            the data MAY be kept for regulation reasons, but not used or exploited any more.
+                        </dd>
+                        <dt>
+                            Form of consent
+                        </dt>
+                        <dd>
+                            OPTIONAL: Describes the way the holder needs to provide his consent. Either
+                            <ul>
+                                <li>
+                                    'explicit'
+                                </li>
+                                <li>
+                                    'implicit'
+                                </li>
+                            </ul>
+                            Default is <b>'explicit'</b>
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Purposes
+                </dt>
+                <dd>
+                    <dl>
+                        <dt>
+                            Id
+                        </dt>
+                        <dd>
+                            Unique identifier of the purpose to use it as a reference
+                        </dd>
+                        <dt>
+                            Purpose Description
+                        </dt>
+                        <dd>
+                            Description of the purpose for which the data will be used
+                        </dd>
+                        <dt>
+                            Purpose Category
+                        </dt>
+                        <dd>
+                            Data privacy category under which falls this purpose of usage.
+                            <p class="ednote">
+                                Credential purposes SHALL provide support for GDPR and other privacy regulations.
+                                Vocabulary
+                                MUST be in line with <a href="https://dpvcg.github.io/dpv/">Data Privacy
+                                    Vocabulary</a>.
+                                <a
+                                    href="https://www.w3.org/community/dpvcg/wiki/Purposes_for_handling_Personal_Data#High-level_categories_.28to-be-discussed.29">
+                                    The list of all accounted purposes</a> has been used as a base for this selection.
+                            </p>
+                            <p>
+                                The category MUST be one of the following:
+                            </p>
+                            <ul>
+                                <li>'Identify verification'</li>
+                                <li>'Fraud detection and prevention'</li>
+                                <li>'Access control'</li>
+                                <li>'Service Provision'</li>
+                                <li>'Service Optimization'</li>
+                                <li>'Service Personalisation'</li>
+                                <li>'Marketing'</li>
+                                <li>'Commercial Interests'</li>
+                                <li>'Research & Development'</li>
+                            </ul>
+                        </dd>
+                        <dt>
+                            Legal basis
+                        </dt>
+                        <dd>
+                            Legal basis employed by the service provider for the usage of this data. One of:
+                            <ul>
+                                <li> 'consent'</li>
+                                <li> 'legal_obligation'</li>
+                                <li> 'contract'</li>
+                                <li> 'vital_interest'</li>
+                                <li> 'public_task'</li>
+                                <li> 'legitimate_interest'</li>
+                            </ul>
+                        </dd>
+                        <dt>
+                            Method of use
+                        </dt>
+                        <dd>
+                            OPTIONAL Indicate the Holder how the data will be processed by the Verifier
+                            <ul>
+                                <li>
+                                    "none"
+                                </li>
+                                <li>
+                                    "data-source"
+                                </li>
+                                <li>
+                                    "data-using-service"
+                                </li>
+                            </ul>
+                        </dd>
+                        <dt>
+                            Data Policy
+                        </dt>
+                        <dd>
+                            <dl>
+                                <dt>
+                                    Data Retention Period
+                                </dt>
+                                <dd>
+                                    Time during which the data MAY be kept by the service provider, even after
+                                    extinction of the consent.
+                                </dd>
+                                <dt>
+                                    Industry Scope
+                                </dt>
+                                <dd>
+                                    OPTIONAL Economic sector representing the service provided.
+                                </dd>
+                                <dt>
+                                    Geographic Restriction
+                                </dt>
+                                <dd>
+                                    OPTIONAL Geographic region where the data will be managed.
+                                </dd>
+                                <dt>
+                                    Jurisdictions
+                                </dt>
+                                <dd>
+                                    OPTIONAL List of legal jurisdictions under which the data will be used.
+                                </dd>
+                                <dt>
+                                    Policy URL
+                                </dt>
+                                <dd>
+                                    URL pointing to the privacy policy of this service
+                                </dd>
+                                <dt>
+                                    Storage Location
+                                </dt>
+                                <dd>
+                                    OPTIONAL Physical location of storage where the Data will be stored
+                                </dd>
+                            </dl>
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Personal Data
+                </dt>
+                <dd>
+                    <dl>
+                        <dt>
+                            Attribute name
+                        </dt>
+                        <dd>
+                            Name describing univocally the attribute.
+                            <p>
+                                It MUST refer to an input descriptor ID on the associated <a>Presentation Definition</a>
+                            </p>
+                        </dd>
+                        <dt>
+                            Attribute sensitive
+                        </dt>
+                        <dd>
+                            <b>boolean</b>
+                            Marks if this piece of information must be managed as sensitive information
+                        </dd>
+                        <dt>
+                            Purposes
+                        </dt>
+                        <dd>
+                            List of purposes, referenced by their Id, under which this credential CAN be used.
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    DPIA
+                </dt>
+                <dd>
+                    OPTIONAL: Information about the <a>DPIAs</a> performed with the generic defined scopes if they have
+                    been
+                    performed
+                    <dl>
+                        <dt>
+                            Timestamp
+                        </dt>
+                        <dd>
+                            Time at which the <a>DPIA</a> was performed
+                        </dd>
+                        <dt>
+                            URL
+                        </dt>
+                        <dd>
+                            Url to retrieve the <a>DPIA</a> report
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Event
+                </dt>
+                <dd>
+                    <p>
+                        The events will track all the lifecycle and interactions performed on the <a>Data Agreement</a>
+                        by the
+                        different parties.
+                    </p>
+                    <dl>
+                        <dt>
+                            Principle Did
+                        </dt>
+                        <dd>
+                            <a>DID</a> of the actor performing the data agreement operation
+                        </dd>
+                        <dt>
+                            State
+                        </dt>
+                        <dd>
+                            Current state of the <a>Data Agreement</a>.
+                            MUST be one of the following:
+                            <ul>
+                                <li>
+                                    'Definition'
+                                </li>
+                                <li>
+                                    'Preparation'
+                                </li>
+                                <li>
+                                    'Capture'
+                                </li>
+                                <li>
+                                    'Modification'
+                                </li>
+                                <li>
+                                    'Revocation'
+                                </li>
+                            </ul>
+                        </dd>
+                        <dt>
+                            Version
+                        </dt>
+                        <dd>
+                            Version of the <a>Data Agreement</a> at the time the Event is performed
+                        </dd>
+                        <dt>
+                            Timestamp
+                        </dt>
+                        <dd>
+                            Time of operation of the <a>Data Agreement</a>
+                        </dd>
+                        <dt>
+                            Proof
+                        </dt>
+                        <dd>
+                            <a>Data Proof</a> asserting the event and the current resulting state of the <a></a>Data
+                            Agreement</a>, as described in <a
+                                href="https://www.w3.org/TR/vc-data-model/#proofs-signatures">VC Data
+                                Model</a>. One or
+                            more cryptographic proofs that can be used to detect tampering and
+                            verify the
+                            authorship of a modification or acceptance event.
+
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+
+            <pre class="example" title="Data Agreement Template">
+                     <pre class="json">
+        {
+            "@context": "https://schema.igrant.io/data-agreements/v1",
+            "data_receiver": {
+                "id": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH",
+                "consent_duration": 365,
+                "form_of_consent": "explicit",
+                "name": "Bank Of America Fake",
+                "service": "Bank Of America Demo",
+                "url": "https://9ae1-88-6-127-11.ngrok.io"
+            },
+            "event": [{
+                "principle_did": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH",
+                "proof": [{
+                    "created": "2022-01-13T07:48:40Z",
+                    "creator": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH#keys-1",
+                    "domain": "gataca.io",
+                    "nonce": "kX04XcM-rpYN4kDopwjaCX-ocxRwzrRs9R_DtsySghs=",
+                    "proofPurpose": "assertionMethod",
+                    "signatureValue": "fRx1WYGM_77VS_7m6SA4hpmmQdT_keIlTABeDY-FA1rQXSe0_zgSDdmVAzcegUJ23jfbKrZY_6EEYrTaode5Dg",
+                    "type": "JcsEd25519Signature2020",
+                    "verificationMethod": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH#keys-1"
+                }],
+                "state": "Preparation",
+                "version": "0",
+                "timestamp": 1642060120223
+            }],
+            "personal_data": [{
+                "attribute_name": "email",
+                "attribute_sensitive": true,
+                "purposes": ["Client authentication"]
+                }, {
+                "attribute_name": "debtRecords",
+                "attribute_sensitive": true,
+                "purposes": ["Client authentication","Special clients promotion"]
+            }],
+            "purposes": [{
+                "data_policy": {
+                    "data_retention_period": 300,
+                    "geographic_restriction": "Europe",
+                    "industry_scope": "Banking",
+                    "jurisdictions": ["Spain", "EU"],
+                    "policy_URL": "https://bank.demo.gataca.io/privacy-policy/",
+                    "storage_location": "Europe"
+                },
+                "id": "Client authentication",
+                "legal_basis": "legal_obligation",
+                "method_of_use": "data-source",
+                "purpose_category": "Identify verification",
+                "purpose_description": "Authenticate the user to provide services"
+            }, {
+                "data_policy": {
+                    "data_retention_period": 30,
+                    "geographic_restriction": "Europe",
+                    "industry_scope": "Banking",
+                    "jurisdictions": ["Spain", "EU"],
+                    "policy_URL": "https://bank.demo.gataca.io/privacy-policy/",
+                    "storage_location": "Europe"
+                },
+                "id": "Special clients promotion",
+                "legal_basis": "legitimate_interest",
+                "method_of_use": "data-using-service",
+                "purpose_category": "Service Personalisation",
+                "purpose_description": "Collecting user data for offering specific promotions"
+            }],
+            "template_id": "x76ShERoQReZmWlLdJZWhWmWQx8bhGa",
+            "template_version": "v1.0",
+        }
+        </pre>
+            </pre>
+        </section>
+
+        <section data-dfn-for="Data Agreement Record">
+            <h2>Data Agreement Record</h2>
+
+            <p>
+                The <a>Data Agreement</a> Record is an extension of the <a>Data Agreement Template</a>.
+            </p>
+            <p>
+                The Holder fills the template offered by the verifier with his personal data and the attribute unique
+                ids that are being shared in that exchange.
+            </p>
+
+            <p class="note">
+                Even if the Holder has multiple pieces of information satisfying the Verifier requirements, the Id of
+                the one selected MUST be referenced in the <a>Data Agreement</a> without disclosing its contents.
+                <br>
+                This is necessary to enforce Data-minimization, and ensure that the Verifier only has rights to use the
+                specific information shared by the Holder, and not any other of that same type that could also come from
+                the same Subject.
+            </p>
+
+            <p>
+                The <a>Data Agreement</a> Record represents the current accepted state of a <a>Data Agreement</a> by
+                both parties.
+                <br>
+                It SHOULD be
+                used to maintain the lifecycle of the credential exchange performed between the Holder and the Verifier.
+            </p>
+
+            <p>
+                The <a>Data Agreement Record</a> MUST be kept at its last version by both the Holder and the Verifier.
+                Previous versions of the <a>
+                    Data Agreement
+                </a> are RECOMMENDED to be stored at least by Verifiers.
+            </p>
+
+            <h3>Properties</h3>
+            <p>
+                The additional properties added to the template are:
+            </p>
+            <dl>
+                <dt>
+                    Id
+                </dt>
+                <dd>
+                    Unique ID to reference this Data Agreement
+                </dd>
+                <dt>
+                    Version
+                </dt>
+                <dd>
+                    Current version of the Data Agreement Record
+                </dd>
+                <dt>
+                    Data Holder
+                </dt>
+                <dd>
+                    DID uniquely referencing the Holder of the credentials, performing the exchange.
+                    <br>
+                    It MAY be the same as the Data Subject. If using Peer DIDs for exchanges, it MUST be the Peer DID.
+                </dd>
+                <dt>
+                    Data Subject
+                </dt>
+                <dd>
+                    DID uniquely referencing the real persona to which the credentials used on the credential exchange
+                    have been issued.
+                    <br>
+                    It MAY be the same or different as the Data Holder.
+                </dd>
+                <dt>
+                    Personal Data
+                </dt>
+                <dd>
+                    Inside the personal data information, the following field MUST be included
+                    <dl>
+                        <dt>
+                            Attribute Id
+                        </dt>
+                        <dd>
+                            Unique reference to the Id of the <a>Verifiable Credential</a> shared satisfying this kind
+                            of information.
+                            <br>
+                            The credential Id MUST match the Id of the Credential that satisfies the Input Descriptor
+                            matching the <b>
+                                Attribute name
+                            </b> of this same piece of personal data
+                        </dd>
+                    </dl>
+                </dd>
+                <dt>
+                    Termination timestamp
+                </dt>
+                <dd>
+                    If present, it signalates that this <a>Data Agreement Record</a> is not in use anymore with the
+                    timestamp at which it was revocated.
+                </dd>
+
+            </dl>
+            <pre class="example" title="Data Agreement Record">
+             <pre class="json">
+{
+    "@context": "https://schema.igrant.io/data-agreements/v1",
+    "data_holder": "did:gatc:NjBjNWJiNmY1ZjQ2NDYyZjk0Zjg0YWI4",
+    "data_receiver": {
+        "id": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH",
+        "consent_duration": 365,
+        "form_of_consent": "explicit",
+        "name": "Bank Of America Fake",
+        "service": "Bank Of America Demo",
+        "url": "https://9ae1-88-6-127-11.ngrok.io"
+    },
+    "data_subject": "did:gatc:YzQxNjRjM2U4YTUzZGVkNjhmNjAxYzk5",
+    "event": [{
+        "principle_did": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH",
+        "proof": [{
+            "created": "2022-01-13T07:48:40Z",
+            "creator": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH#keys-1",
+            "domain": "gataca.io",
+            "nonce": "kX04XcM-rpYN4kDopwjaCX-ocxRwzrRs9R_DtsySghs=",
+            "proofPurpose": "assertionMethod",
+            "signatureValue": "fRx1WYGM_77VS_7m6SA4hpmmQdT_keIlTABeDY-FA1rQXSe0_zgSDdmVAzcegUJ23jfbKrZY_6EEYrTaode5Dg",
+            "type": "JcsEd25519Signature2020",
+            "verificationMethod": "did:gatc:24vXYrJLHzoEuooa7xV6AZG2wc6tZSfH#keys-1"
+        }],
+        "state": "Preparation",
+        "version": "0",
+        "timestamp": 1642060120223
+    }, {
+        "principle_did": "did:gatc:NjBjNWJiNmY1ZjQ2NDYyZjk0Zjg0YWI4",
+        "proof": [{
+            "created": "2022-01-13T07:50:12Z",
+            "creator": "did:gatc:NjBjNWJiNmY1ZjQ2NDYyZjk0Zjg0YWI4#keys-1",
+            "proofPurpose": "authentication",
+            "signatureValue": "uWl5t_KSV09qG5nv5Opk0A-r0WoNKkeY9otdxA43sPwQFK4ZACVCKKT0bockbUYAhXm-SGBhQ45xlBwgH-GXDw",
+            "type": "JcsEd25519Signature2020",
+            "verificationMethod": "did:gatc:NjBjNWJiNmY1ZjQ2NDYyZjk0Zjg0YWI4#keys-1"
+        }],
+        "state": "Capture",
+        "version": "1",
+        "timestamp": 1642060212916
+    }],
+    "id": "3Nkep8bQygtyWyrmcJDkmnnmH8W1huJpZ4E2i6WyY1da",
+    "personal_data": [{
+        "attribute_id": "cred:gatc:NjMxNjc0NTA0ZjVmZmYwY2U0Y2M3NTRk",
+        "attribute_name": "email",
+        "attribute_sensitive": true,
+        "purposes": ["Client authentication"]
+        }, {
+        "attribute_id": "urn:credential:hEoISQtpfXua6VWzbGUKdON1rqxF3liv",
+        "attribute_name": "debtRecords",
+        "attribute_sensitive": true,
+        "purposes": ["Client authentication","Special clients promotion"]
+    }],
+    "purposes": [{
+        "data_policy": {
+            "data_retention_period": 300,
+            "geographic_restriction": "Europe",
+            "industry_scope": "Banking",
+            "jurisdictions": ["Spain", "EU"],
+            "policy_URL": "https://bank.demo.gataca.io/privacy-policy/",
+            "storage_location": "Europe"
+        },
+        "id": "Client authentication",
+        "legal_basis": "legal_obligation",
+        "method_of_use": "data-source",
+        "purpose_category": "Identify verification",
+        "purpose_description": "Authenticate the user to provide services"
+    }, {
+        "data_policy": {
+            "data_retention_period": 30,
+            "geographic_restriction": "Europe",
+            "industry_scope": "Banking",
+            "jurisdictions": ["Spain", "EU"],
+            "policy_URL": "https://bank.demo.gataca.io/privacy-policy/",
+            "storage_location": "Europe"
+        },
+        "id": "Special clients promotion",
+        "legal_basis": "legitimate_interest",
+        "method_of_use": "data-using-service",
+        "purpose_category": "Service Personalisation",
+        "purpose_description": "Collecting user data for offering specific promotions"
+    }],
+    "template_id": "x76ShERoQReZmWlLdJZWhWmWQx8bhGa",
+    "template_version": "v1.0",
+    "version": "1"
+}
+                            </pre>
+            </pre>
+        </section>
+
+        <h2>Known deviations </h2>
+        <p>
+            There are some known deviations from <a>Automated Data Agreements</a> due either to technical implementation
+            issues or to the adaptation to the <a>Presentation exchange</a> protocol.
+        </p>
+        <p>
+            Those changes apply to the relation between different subproperties of the Data Agreement or the cardinality
+            between them:
+        </p>
+        <ul>
+            <li>
+                <b>Usage of multiple purposes:</b> <br>
+                The <a>Data Agreement</a> represents all the information shared between a Holder and a Verifier in order
+                to enjoy a given Digital Service.
+                <br>
+                The service MAY require data for different purposes.
+                <br>
+                The different pieces of data taking place in the exchange MAY be used for more than one single purposes.
+            </li>
+            <li>
+                <b>Including data subject and data holder:</b> <br>
+                The data user and the data holder are required to verify the DIDs performing the different
+                acceptance/update events on the <a>Data Agreement</a>
+                <br>
+                The distinction between both roles has been included to allow the usage of Peer DIDs or Identity
+                Delegation processes.
+            </li>
+            <li>
+                <b>Additional information on the Data Receiver:</b> <br>
+                More information on the Data Receiver has been included to better adapt to <a>Consent Receipts</a>
+            </li>
+            <li>
+                <b>Usage of Proofs:</b> <br>
+                Proofs are included inside each of the events to maintain a cleaner view and verification of the state
+                of the record.
+                <br>
+                The version of the <a>Data Agreement</a> at the time of the event is also included to easy audit labors.
+            </li>
+        </ul>
+    </section>
+
+    <section data-dfn-for="Lifecycle management">
+        <h1>Lifecycle management</h1>
+
+        This MUST be the lifecycle of a <a>Data Agreement</a>:
+        <figure>
+            <img src="assets/da_lifecycle.png"></img>
+            <figcaption>Simplified lifecycle of the
+                data agreement record
+            </figcaption>
+        </figure>
+
+        <section data-dfn-for="Creation">
+            <h2>
+                Creation
+            </h2>
+            <p>
+                The generation <a>Data Agreement</a> MUST be performed along a new <a>Presentation
+                    Exchange</a>.
+                With any presentation exchange, a <a>Data Agreement Template</a> with a given <b>Id</b> and
+                <b>Version</b> SHOULD be attached.
+            </p>
+
+            <p>
+                The Holder SHOULD check for existent <a>Data Agreement Records</a> belonging to the same <b>data
+                    receiver id</b> id.
+                <br>
+            <ul>
+                <li>
+                    If there are none existent, then a new <a>Data Agreement</a> MUST be created.
+                </li>
+                <li>
+                    If there are is one or more existent, but with a different <b>template_id<b></b>, then a new <a>Data
+                            Agreement</a> MUST be created.
+                </li>
+                <li>
+                    If there is one existing with the same <b>template_id</b>, the <b>template_version</b> MUST be
+                    checked to
+                    see if a modification is required or if the last existent <a>Data Agreement Record</a>can be used
+                </li>
+            </ul>
+            </p>
+
+            <p>
+                The process to generate a new <a>Data Agreement</a> would be:
+            <ol>
+                <li>
+                    Assing a new random Id and set the version to 1
+                </li>
+                <li>
+                    Fill the <a>Data Agreement Record</a> with the attribute ids of the selected credentials matching
+                    the <a>Presentation Definition</a>
+                </li>
+
+                <li>
+                    Add an event with status <b>Preparation</b> with the new version and sign it with the Holder DIDs
+                </li>
+                <li>
+                    Only if the Holder <a>DID</a> is different than the Subject <a>DID</a>: <br>
+                    Add an event with status <b>Preparation</b> with the new version and sign it with the Subject
+                    <a>DID</a>
+                </li>
+
+                <li>
+                    Send it to the Verifier
+                </li>
+                <li>
+                    <ol>
+                        <li>
+                            Verify that all the requirements are filled.
+                        </li>
+                        <li>
+                            Add an event with status <b>Capture</b> with the version <b>1</b> and sign it with the
+                            Verifier
+                            <a>DID</a>.
+                        </li>
+                        <li>
+                            Store the new version of the <a>Data Agreement Record</a>.
+                        </li>
+                        <li>
+                            Return the updated <a>Data Agreement Record</a> to the Holder
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Store in the wallet the updated and approved <a>Data Agreement Record</a> to use it on current or
+                    next presentation exchanges.
+                </li>
+            </ol>
+            </p>
+        </section>
+
+        <section data-dfn-for="Modifications">
+            <h2>
+                Modifications
+            </h2>
+
+            <p>The <a>Data Agreement</a> MAY be modified along time with new needs from both the Holder or the Verifier.
+            </p>
+
+            <p> Any modifications of the <a>Data Agreement</a> MUST be performed along a new <a>Presentation
+                    Exchange</a>.</p>
+
+            <p>
+                This table shows the different kind of modifications that can be performed on a <a>Data Agreement</a>:
+            </p>
+            <figure id="api-functional-alignment">
+                <pre class="json">
+                             +-------------------------------------++-------------------------------------+
+                             |            Holder                   ||               Verifier             |
+                             +-------------------------------------++-------------------------------------+
+                            +-----------------------------------------------------------------------------+ 
+                            |+-------------------------------------++------------------------------------+|
+                            || Replacing shared credentials        || Asking for a different set of      ||
+                            ||  with an equivalent                 || credentials                        ||
+                            ++------------------------------------++-------------------------------------++
+                            || Revoking access to some credentials || Modifying the credential purposes  ||
+                            || => Partial Revocation               ||                                    ||
+                            ++---------------------------------------------------------------------------++
+                            |                                                                             |
+                            |           End of relationship => Full revocation                            |
+                            |                                                                             |
+                            +-----------------------------------------------------------------------------+
+                        </pre>
+                <figcaption style="text-align: center;">
+                    Modifications performed on a data agreement by Actor
+                </figcaption>
+            </figure>
+
+            <p>
+                Modifications of the <a>Data Agreement</a> MUST result in a higher version of the <a>Data Agreement
+                    Record</a>
+
+            </p>
+            <p>
+                Every version of the <a>Data Agreement Record</a> MUST be signed by both the Verifier and the Holder.
+                Every stable <a>Data Agreement Record</a> MUST contain at least 2 events with the current version, each
+                signed by a different Actor.
+            </p>
+
+
+
+            <h3 class="informative">
+                Modifications by the Holder
+            </h3>
+
+            <p>
+                The Holder CAN only modify some credentials, depending on the Category of the Purpose assigned to the
+                credential.
+            </p>
+
+            <figure id="api-functional-alignment">
+
+                <table>
+                    <thead>
+                        <th>
+                            Purpose Category
+                        </th>
+                        <th>
+                            Substitution
+                        </th>
+                        <th>
+                            Partial Revocation
+                        </th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>'Identify verification'</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Fraud detection and prevention'</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Access control'</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Service Provision'</td>
+                            <td>X</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Service Optimization'</td>
+                            <td>X</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Service Personalisation'</td>
+                            <td>X</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>'Marketing'</td>
+                            <td>X</td>
+                            <td>X</td>
+                        </tr>
+                        <tr>
+                            <td>'Commercial Interests'</td>
+                            <td>X</td>
+                            <td>X</td>
+                        </tr>
+                        <tr>
+                            <td>'Research & Development'</td>
+                            <td>X</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <figcaption style="text-align: center;">
+                    Actions on credentials depending on their purpose
+                </figcaption>
+            </figure>
+            <p class="ednote">
+                This table is not a final definition.
+                <br>
+                The protocol of substitution or partial revocation of a specific purpose would be better configured at
+                purpose level.
+                It hasn't been suggested so in the data model to avoid major divergencies with the <a>Consent
+                    Receipts</a> and <a>ADA</a> specifications.
+            </p>
+
+            <p>
+                The process to modify a <a>Data Agreement</a> would be:
+            <ol>
+                <li>
+                    Update the Data Agreement version
+                </li>
+                <li>
+                    Perform the allowed modifications
+                </li>
+                <li>
+                    Add an event with status <b>Preparation</b> with the new version and sign it with the Holder DIDs
+                </li>
+                <li>
+                    Send it to the Verifier
+                </li>
+                <li>
+                    <ol>
+                        <li>
+                            Verify that all modifications are allowed.
+                        </li>
+                        <li>
+                            Add an event with status <b>Capture</b> with the new version and sign it with the Verifier
+                            DIDs.
+                        </li>
+                        <li>
+                            Store the new version of the consent record.
+                        </li>
+                        <li>
+                            Return the updated <a>Data Agreement Record</a> to the Holder
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Store in the wallet the updated and approved <a>Data Agreement Record</a> to use it on current or
+                    next presentation exchanges.
+                </li>
+            </ol>
+            </p>
+
+            <h3>
+                Modifications by the Verifier
+            </h3>
+
+            <p>
+                The process to modify a <a>Data Agreement</a> would be:
+            <ol>
+                <li>
+                    Update the Data Agreement Template version
+                </li>
+                <li>
+                    Perform the requested modifications
+                </li>
+                <li>
+                    Update the Data Agreement version
+                </li>
+                <li>
+                    Add an event with status <b>Definition</b> with the new version and sign it with the Holder DIDs
+                </li>
+                <li>
+                    Send it to the Holder
+                </li>
+                <li>
+                    <ol>
+                        <li>
+                            Decide if accept the requested modifications
+                        </li>
+                        <li>
+                            Fill the data agreement and the associated <a>Presentation Exchange</a> like in <a
+                                href="#creation">the Creation process</a>
+                        </li>
+                        <li>
+                            Store the new version of the consent record.
+                        </li>
+                        <li>
+                            Return the updated <a>Data Agreement Record</a> to the Verifier
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Store the new Version of the <a>Data Agreement Record</a> in the Verifier storage to use it on
+                    current or
+                    next presentation exchanges.
+                </li>
+            </ol>
+            </p>
+        </section>
+
+        <section data-dfn-for="Revocation">
+            <h2>
+                Revocation
+            </h2>
+
+            <p>
+                The full revocation of the <a>Data Agreement</a> CAN be requested by both parties.
+            </p>
+            <p>
+                The process of revocation is done by sending a <a>Data Agreement Record</a> with the last known version
+                with a <b>termination timestamp</b>
+                and a new Event of status <b>Revocation</b> signed by the requester.
+                The receiver MUST also add a new Event of status <b>Revocation</b> signed by the him.
+                Both parties MAY store later the <a>Data Agreement Record</a> as proof of termination.
+            </p>
+
+            <h3>Consequences</h3>
+
+            <p>
+                The provision of the data-using-service to the Subject MAY end after the acceptance of the revocation.
+            </p>
+            <p>
+                The usage of the data MAY be done up until the expiration of the Consent, as accepted in the first
+                version.
+                <br>
+                The storage of Data MAY be executed for each specific purpose until it was accepted on the <a>Data
+                    Agreement</a>.
+            </p>
+
+            <p>
+                For security reasons, if using a Peer <a>DID</a> as a Holder for the <a>Data Agreement</a>, it is
+                RECOMMENDED to also revoke the <a>DID</a>.
+                In that case, further exchanges of this data CANNOT be trusted by the Verifier, rendering it unusable.
+            </p>
+        </section>
+
+    </section>
+    <section data-dfn-for="Embed in exchange" class="informative">
+        <h1>Embed in exchange</h1>
+
+        <p>
+            This section will guide in how to integrate a <a>Data Agreement</a> inside a <a>Presentation Exchange</a> in
+            the context of the <a>Verifier Universal Interface</a>.
+        </p>
+
+        <p>
+            As defined before, to embed the <a>Data Agreement</a> in a <a>Presentation Exchange</a>, a <a>Data Agreement
+                Template</a> MUST be defined.
+            Said template MUST be either referred or embedded in the <a>Presentation Definition Document</a>.
+        </p>
+
+        <p>
+            Upon receiving a <a>Presentation Definition</a> with an embedded <a>Data Agreement Template</a>, 4 options
+            are possible:
+        <ol>
+            <li>
+                There is no previous Data Agreement for this data receiver. In this case a new one MUST be created.
+            </li>
+            <li>
+                There is a previous Data Agreement for this data receiver with a different template_id. In this case a
+                new one MUST also be created.
+            </li>
+            <li>
+                There is a previous Data Agreement for this data receiver with the same template_id but a different
+                template version.
+                In this case the record MUST also be modified.
+            </li>
+            <li>
+                There is a previous Data Agreement for this data receiver with the same template_id and template
+                version.
+                In this case no operations must be done.
+            </li>
+        </ol>
+        </p>
+
+        <p>
+            In order for the Holder to communicate with the Verifier to manage the data agreement lifecycle, he MUST use
+            the URL property of the data receiver.
+        </p>
+
+        <p>
+            The Verifier API to operate with data receivers MUST conform with <a href="">the API defined</a> on the
+            corresponding
+            <a>VUI</a> working package.
+
+        </p>
+
+        <p>
+            Whatever operations on the <a>VUI</a> Data Agreement Interface have been performed, the Holder MUST include
+            the <a>Data Agreement Record</a> <b>id</b> in the <b>data_agreement_id</b> property of the presentation
+            submission.
+        </p>
+
+    </section>
+
+    <section id="tof"></section>
+</body>
+
+</html>

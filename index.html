@@ -385,7 +385,7 @@
                 <h2>Issuer Registry</h2>
                 The VUI protocol and considerations for querying the issuer registry is being defined by a specific
                 working
-                package inside the VUI. <a href="/issuerResolution">See
+                package inside the VUI. <a href="/verifier-apis/issuerResolution">See
                     [WP-VUI-IssuerResolution] </a>.
             </section>
             <section data-dfn-for="Schema Resolution">
@@ -402,20 +402,45 @@
             <section data-dfn-for="Presentation Exchange">
                 <h2>Presentation Exchange</h2>
                 The VUI protocol and considerations for the Presentation Exchange is being defined by a specific working
-                package. <a href="/presentationExchange">See
+                package. <a href="/verifier-apis/presentationExchange">See
                     [WP-VUI-PresentationExchange] </a>.
                 The data model builds upon <a href="/verifier-apis/presentationExchange">DIF Presentation Exchange</a>
                 with some
                 optional
                 additions to support additional features and connect to Data Agreements.
-                For the communication protocol, multiple flavors MAY be accepted:
+                For the communication protocol, multiple flavors could be eligible, such as:
+                <ul>
+                    <li>
+                        <a href="https://identity.foundation/didcomm-messaging/spec/">DID Comm</a>, which is supported
+                        by <a href="https://identity.foundation/waci-presentation-exchange/">WACI</a>
+                    </li>
+                    <li>
+                        <a href="https://w3c-ccg.github.io/credential-handler-api/">CHAPI</a>
+                    </li>
+                    <li>
+                        <a href="https://w3c-ccg.github.io/vc-api/"">VC-HTTP-APIS</a>
+                                    </li>
+                                    <li>
+                                        <a href="
+                            https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html">DID
+                            SIOP</a>
+                    </li>
+                </ul>
+
+                <p>
+                    At this point of definition and implementation, VUI Presentation Exchange is focused on having
+                    support
+                    on the last one <a
+                        href=" https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html">DID
+                        SIOP</a>
+                </p>
             </section>
             <section data-dfn-for="Data Agreements">
                 <h2>Data Agreements</h2>
                 Data Agreements include Data privacy management oriented to the enforcement of DPIA controls, in privacy
                 frameworks such as GDPR.
                 The VUI protocol to manage and generate data agreements can be found on its own working package. <a
-                    href="/dataAgreements">See
+                    href="/verifier-apis/dataAgreements">See
                     [WP-VUI-DataAgreements] </a>.
             </section>
         </section>
