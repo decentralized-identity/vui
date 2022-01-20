@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+    <script src="./common.js"></script>
+    <script class="remove">
+        // All config options at https://respec.org/docs/ 
+        var respecConfig = {
+            specStatus: "unofficial",
+            editors: [
+                {
+                    name: "José San Juan",
+                    url: "https://gataca.io",
+                    mailto: "it@gataca.io"
+                },
+            ],
+            github: "gataca-io/vui-specs",
+            shortName: "vui-pex",
+            xref: "web-platform",
+            group: "Verifier Universal Interfaces",
+            localBiblio: ccg.localBiblio,
+            logos: [
+                {
+                    src: "https://cdn2.hubspot.net/hubfs/4728390/GATACA_ISOTYPE_GRADIENT.png",
+                    url: "https://gataca.io",
+                    alt: "GATACA",
+                    width: 100,
+                    height: 100,
+                    id: "gataca-logo",
+                },
+            ],
+        };
+    </script>
+    <style>
+        .oplist {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .oplist:first-of-type {
+            counter-reset: item;
+        }
+
+        .start2 {
+            counter-set: item 1;
+        }
+
+        .start4 {
+            counter-set: item 3;
+        }
+
+        .oplist>li {
+            display: table;
+            counter-increment: item;
+            margin-bottom: 0.6em;
+        }
+
+        .oplist>li:before {
+            content: counters(item, ".") ". ";
+            display: table-cell;
+            padding-right: 0.6em;
+        }
+
+        li .oplist>li {
+            margin: 0;
+        }
+
+        li .oplist>li:before {
+            content: counters(item, ".") " ";
+        }
+
+        table {
+            border-collapse: collapse;
+            border-width: 1px;
+        }
+
+        table td,
+        table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title">Presentation exchange</h1>
+    <h2 id="subtitle">Definition of the standards allowing a presentation exchange between a wallet and a verifier of
+        any technology provider under the Verifier Universal Interface protocol, as well as its relations with other
+        protocols in VUI.
+    </h2>
+
+    <section id="abstract">
+        <p>
+            Decentralized digital identity, or "self-sovereign" identity (SSI), is a new paradigm proposed for managing
+            digital identities. Relying on Decentralized identifiers (<a>DIDs</a>) and Verifiable Credentials (VC), the
+            subject
+            and his personal credentials are independent from any centralized registry,
+            identity provider, or certificate authority.
+        </p>
+        <p>
+            On the Decentralized Identity model, the role associated to requesting and verifying credentials is
+            defined as the Verifier.
+        </p>
+        <dd>
+            In order to retrieve those credentials in an interporative way, a standard exchange protocol supporting all
+            the needs of wallet providers and verifiers providers is required. As there are multiple interoperability
+            and standarization efforts present, the goal of this spec is to build upon the existing protocols and
+            explain its usage by any verifier and it's relation with other possible verifier needs.
+        </dd>
+
+        <p class="ednote">
+            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
+            propose extensions of existing protocols to allow to connect them with other interfaces or add additional
+            features.
+            Those extensions must be discussed and included if considered deemed on said protocols.
+        </p>
+    </section>
+    <section id="sotd">
+        <p> </p>
+    </section>
+    <section data-dfn-for="Context">
+        <h1>Context</h1>
+        <p>
+            There are multiple known and well adopted technology solutions or standard focused on the presentation
+            exchange between a wallet and a verifier. There are framework solutions, such as <a
+                href="https://github.com/hyperledger/aries"> Hyperledger Aries</a>.
+            And there are also other standardization efforts, that might be compatible or not with other solutions, such
+            as:
+        <ul>
+            <li>
+                <a href="https://identity.foundation/DIDcomm-messaging/spec/">DID Comm</a>, which is
+                supported
+                by <a href="https://identity.foundation/waci-presentation-exchange/">WACI</a>
+            </li>
+            <li>
+                <a href="https://w3c-ccg.github.io/credential-handler-api/">CHAPI</a>
+            </li>
+            <li>
+                <a href="https://w3c-ccg.github.io/vc-api/">VC-HTTP-APIS</a>
+            </li>
+            <li>
+                <a href="
+                    https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html">DID
+                    SIOP</a>
+            </li>
+        </ul>
+        </p>
+        <p>
+            It seems however that the [DIF Presentation Exchange] Data Model is a well accepted starting point, as it is
+            the base or supported by most of those listed approaches.
+        </p>
+        <section id="conformance">
+        </section>
+        <section id="terminology">
+            <h2>Terminology</h2>
+            <dl>
+                <dt><dfn data-lt="DID|<a>DIDs</a>|decentralized identifiers">Decentralized Identifier</dfn>
+                    (DID)</dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID document</dfn></dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID resolution</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="DID resolver's">DID resolver</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="VC|Verifiable Credential">Verifiable Credential</dfn> (VC)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="LD PROOFS|Proofs|Linked Data Proofs">Linked Data Proofs</dfn></dt>
+                <dd>As defined in [[LD-PROOFS]].</dd>
+                <dt><dfn data-lt="DIF Presentation Exchange|Presentation Exchange">Presentation Exchange</dfn></dt>
+                <dd>As defined in [[DIF-PRESENTATION-EXCHANGE]]</a></dd>
+                <dt><dfn data-lt="Presentation Definition">Presentation Definition</dfn></dt>
+                <dd>As defined in [[DIF-PRESENTATION-EXCHANGE]]</dd>
+                <dt><dfn data-lt="Presentation Submission">Presentation Submission</dfn></dt>
+                <dd>As defined in [[DIF-PRESENTATION-EXCHANGE]]</dd>
+                <dt><dfn data-lt="Data Agreements|Data Agreement|Data Agreement Record">Data Agreements</dfn></dt>
+                <dd>As defined in [[DATA-AGREEMENTS]]</a></dd>
+                <dt><dfn data-lt="Data Agreement Template">Data Agreement Template</dfn></dt>
+                <dd>As defined in [[DATA-AGREEMENTS]]</a></dd>
+            </dl>
+        </section>
+    </section>
+    <section data-dfn-for="Data Model">
+        <h1>Data Model</h1>
+
+        <p>
+            The base data model for the presentation exchange is the one defined by <a>DIF Presentation Exchange</a>,
+            considering
+            both the <a>Presentation Definition</a> and the <a>Presentation Submission</a>
+        </p>
+
+        <p>
+            However, a few extensions of the data models are suggested to allow the usage of <a>Data Agremeents</a> and
+            to
+            improve the verifier capacities to trust the source of the presentation.
+        </p>
+
+        <section data-dfn-for="Extensions">
+            <h2>
+                Extensions
+            </h2>
+
+            <p>
+                All extensions are RECOMMENDED. Both the verifier and the holder MAY decide not to trust the other party
+                if the extensions are not
+                fulfilled.
+            </p>
+            <p>
+                There are 3 extensions suggested:
+            </p>
+
+            <section data-dfn-for="Data Agreement">
+                <h3>
+                    Data Agreement
+                </h3>
+
+                <p>
+                    The inclusion of data agreements inside a <a>Presentation Exchange</a> MAY be achieved by integring
+                    a
+                    <a>Data Agreement</a> inside the exchange.
+                </p>
+
+                <h4>
+                    Presentation Definition
+                </h4>
+
+                <p>
+                    To do that, the following field MAY be added on the <a>Presentation Definition</a> object:
+                </p>
+
+                <dl>
+                    <dt>
+                        data_agreement
+                    </dt>
+                    <dd>
+                        The data agreement property MUST either
+                        <ul>
+                            <li>
+                                Contain a full <a>Data agreement template</a> object
+                            </li>
+                            <li>
+                                Be a URI Referencing a <a>Data Agreement Template</a>
+                            </li>
+                        </ul>
+                    </dd>
+                </dl>
+
+                <pre class="example" title="Presentation Definition with embeded data Agreement">
+                                        <pre class="json">{ 
+    "presentation_definition": {
+        "dataAgreement": {
+            "@context": "https://schema.igrant.io/data-agreements/v1",
+            "data_receiver": { ...},
+            "events": [...],
+            "id": "BUuzq96T7EBvohJngS6xuz5tWc5P7PLmjFDW7KtAQe9y",
+            "personal_data": [...],
+            "purposes": [...],
+            "template_id": "x76ShERoQReZmWlLdJZWhWmWQx8bhGa",
+            "template_version": "v1.0",
+            "version": "0"
+        },
+        "name": "Gataca",
+        "id": "CAajN2Z9z2pDW5jYfLdN5iemXutsK5mYDXE8porx79f",
+        "purpose": "Demo",
+        "format": {...},
+        "submission_requirements": [...],
+        "input_descriptors": [...]
+    }
+}
+                                        </pre>
+
+                </pre>
+
+                <pre class="example" title="Presentation Definition with referenced data Agreement">
+                                                        <pre class="json">{
+    "presentation_definition": {
+        "dataAgreement": "https://universalverifier.io/api/v1/sessions/CAajN2Z9z2pDW5jYfLdN5iemXutsK5mYDXE8porx79f/dataAgreement",
+        "name": "Gataca",
+        "id": "CAajN2Z9z2pDW5jYfLdN5iemXutsK5mYDXE8porx79f",
+        "purpose": "Demo",
+        "format": {...},
+        "submission_requirements": [...],
+        "input_descriptors": [...]
+    }
+}
+                                                        </pre>
+
+                </pre>
+                <h4>
+                    Presentation Submission
+                </h4>
+                <p>
+                    If a <a>Data Agreement Template</a> is introduced by the verifier in the <a>Presentation
+                        Definition</a>, then the Holder MUST ensure that he has provided that verifier with a valid <a>
+                        Data Agreement
+                    </a>.
+                </p>
+                <p>
+                    As defined in [[DATA-AGREEMENTS]]:
+                </p>
+                <p>
+                    The Holder MAY reuse a previously existing <a>
+                        Data Agreement Record
+                    </a> if he already possesses one with the same <dt>template_id</dt> and <dt>template_version</dt> as
+                    the one required on the <a>Data Agreement Template</a> on the <a>Presentation Definition</a>
+                </p>
+                <p>
+                    The Holder MAY generate and share a new <a>Data Agreement Record</a> fulfilling the defined
+                    template.
+                </p>
+
+                <p>
+                    Once ensured the existance of a <a>Data Agreement Record</a> according to this submission, the
+                    Holder MUST include the following property in his submission:
+                </p>
+                <dt>
+                    data_agreement_id
+                </dt>
+                <dd>
+                    The data agreement property MUST be the Id of the <a>Data Agreement Record</a> to validate this
+                    exchange
+                </dd>
+
+                <p>
+                    The <dt>
+                        data_agreement_id
+                    </dt> property must be included at the same level as the <dt>
+                        presentation_submission
+                    </dt> in the presentation document, regardless of the presentation format.
+                    See <a href="https://identity.foundation/presentation-exchange/#embed-targets">Embed targets</a>
+                </p>
+
+                <pre class="example" title="Verifiable Presentation with Data Agreement Record">
+    <pre class="json">
+                {
+                    "verifiablePresentation": {
+                        "@context": ["https://www.w3.org/2018/credentials/v1", "https://identity.foundation/presentation-exchange/submission/v1"],
+                        "data_agreement_id": "G5Numq3USqDJLzpZ4R9vB6zuQ4djGPwy6cY9usDYGqNn",
+                        "holder": "did:gatc:NzdlMDBhMDZlYjdkZGYxYzQwZjJkOTYx",
+                        "presentation_submission": {...},
+                        "proof": [...],
+                        "type": ["VerifiablePresentation", "PresentationSubmission"],
+                        "verifiableCredential": [...]
+                    }
+                }
+                                                                        </pre>
+            </section>
+            <section data-dfn-for="Proofing">
+                <h3>
+                    Proofing
+                </h3>
+
+                <p>
+                    It could be desirable for a Holder to know the source of a <a>Presentation Definition</a> for
+                    multiple reasons:
+                <ul>
+                    <li>
+                        Avoid physing problems
+                    </li>
+                    <li>
+                        Improve user experience
+                    </li>
+                    <li>
+                        Add additional security to off-channel communication, specially if the authenticating device
+                        needs to read a QR.
+                    </li>
+                </ul>
+
+                In general, any attacks focused on the impersonation of a verifier would be considerably difficulted by
+                the requirement of signing the presentation definition with the verifier <a>DID</a>.
+                </p>
+
+                <p>
+                    The <a>Presentation Definition</a> MAY be improved by the usage of <a>Data Proofs</a>, making them
+                    a <i>"Verifiable"</i> object.
+                </p>
+
+                <pre class="example" title="Signed Presentation Definition">
+                        <pre class="json">
+                                {
+                                    "verifiablePresentation": {
+                                        "@context": ["https://www.w3.org/2018/credentials/v1", "https://identity.foundation/presentation-exchange/submission/v1"],
+                                        "data_agreement_id": "G5Numq3USqDJLzpZ4R9vB6zuQ4djGPwy6cY9usDYGqNn",
+                                        "holder": "did:gatc:NzdlMDBhMDZlYjdkZGYxYzQwZjJkOTYx",
+                                        "presentation_submission": {...},
+                                        "proof": {
+                                            "created": "2022-01-07T11:53:21Z",
+                                            "creator": "did:gatc:24gsRbsURij3edoveHv81jt9EnhggrnR#keys-1",
+                                            "domain": "gataca.io",
+                                            "nonce": "sUzybVzzg1ZXFw-xDqSeMP3-TiZqKOtxszk0K4Ag5X8=",
+                                            "proofPurpose": "assertionMethod",
+                                            "signatureValue": "qGIh5JLxollEek5l1yFUcwmHj2H1ZYn3PR8uTa5bDtIcpW6MKKJDpc5_YQjqHGVUKbre8EMDI7e07lgR1ZJ9Bg",
+                                            "type": "JcsEd25519Signature2020",
+                                            "verificationMethod": "did:gatc:24gsRbsURij3edoveHv81jt9EnhggrnR#keys-1"
+                                        },
+                                        "type": ["VerifiablePresentation", "PresentationSubmission"],
+                                        "verifiableCredential": [...]
+                                    }
+                                }
+                    </pre>
+            </section>
+            <section data-dfn-for="Source Authentication">
+                <h3>
+                    Source Authentication
+                </h3>
+
+                <p>There may be additional requirements by the verifier to trust the source of the credentials:</p>
+                <p>Possessing a <a>DID</a> and some credentials doesn't guarantee that they could be trusted, as they
+                    could
+                    come from a non-secure wallet or belong to malificient users colliding to fake an identity.</p>
+
+                <p>There is a lot of discussion regarding how to bind the wallet or the subject to the holder. See for
+                    instance <a
+                        href="https://identity.foundation/presentation-exchange/#holder-and-subject-binding">holder and
+                        subject binding</a></p>
+                <p>
+                    The verifier MAY require specific keys to sign the presentation.
+                </p>
+                <p>
+                    There are two kind of keys that the verifier MAY require:
+                </p>
+                <section data-dfn-for="Wallet Keys">
+                    <h4>
+                        Wallet keys
+                    </h4>
+                    <p>Wallet providers SHOULD embed a private key in their app.</p>
+
+
+                    <p>Different wallets SHOULD be uniquely identified by a unique <a>DID</a>.</p>
+                    <p>The app private key MUST be refered on the <a>DID</a> with a verification method containing the
+                        identifier <dt>#appAuth</dt>
+                    </p>
+                    <p>The verifier MAY require a presentation submission to be also signed with the wallet <a>DID</a>.
+                    </p>
+                    <p class="note">Embedding private keys in applications is never completely secure. Any attackers
+                        will have full access to the code. Obfuscation mechanisms MUST be applied.
+                        <br>
+                        Rotating the embeded private keys frequently to difficult the retrieval is
+                        RECOMMENDED.
+                    </p>
+                </section>
+                <section data-dfn-for="Second Factor Keys">
+                    <h4>
+                        Second Factor Keys
+                    </h4>
+                    <p>Holder <a>DIDs</a> SHOULD contain multiple authentication keys.</p>
+
+                    <p>The usage of Peer <a>DIDs</a> as Holder <a>DIDs</a> instead of the subject root <a>DID</a> is
+                        RECOMMENDED.</p>
+
+                    <p>Each different authentication key should be retrieved after executing an additional
+                        authentication process on the wallet, a second factor authentication. Some of those process
+                        could be:
+                    <dl>
+                        <dt>silent</dt>
+                        <dd>No other authentication process than having the wallet open</dd>
+                        <dt>biometric</dt>
+                        <dd>Fingerprint or face validation authentication</dd>
+                        <dt>email</dt>
+                        <dd>Authentication via email OTP</dd>
+                        <dt>phone</dt>
+                        <dd>Authentication via sms OTP</dd>
+                        <dt>faceSDK</dt>
+                        <dd>Authentication using a face validation SDK</dd>
+                        <dt>authenticator</dt>
+                        <dd>2FA performed on an authenticator application</dd>
+                    </dl>
+                    </p>
+
+                    <p>
+                        The key identifier MUST represent the authentication process performed.
+                    </p>
+                </section>
+
+                <h4>
+                    Presentation Definition
+                </h4>
+
+                <p class="ednote">
+                    This solution has been suggested to avoid modifications on the Presentation definition data model.
+                    Other more elegant solutions are also possible with the inclusion of additional properties.
+                </p>
+
+                <p>
+                    Specific signing keys MAY be required on the <a>Presentation Definition</a> by including a specific
+                    configuration:
+                </p>
+
+                <h5>
+                    Submission requirements
+                </h5>
+                <p>
+                    Include a specific submission requirement with the following properties:
+                <pre class="example" title="Submission requirements for identity binding">
+                                                                            <pre class="json">
+                    {
+                        name: 'Identity_binding',
+                        purpose:
+                        'Assert wallet source and bind the subject and the holder to the presentation',
+                        rule: 'all',
+                        from: 'identity'
+                    }
+                    </pre>
+                </pre>
+                </p>
+
+                <h5>
+                    Input descriptors
+                </h5>
+
+                <p>
+                    Multiple Input descriptors MAY be included to satisfy the identity binding needs.
+                </p>
+                <p>
+                    All those Input descriptors MUST belong to the group <dt>identity</dt>
+                </p>
+                <p>
+                    All those Input descriptors MUST refer to the <dt>path</dt>
+                <pre class="json">{
+                    path: ['vp.proof.creator'],
+                    }
+                    </pre>
+                </p>
+                <p>
+                    The pattern MUST contain the format of the required authentication keys. The logical requirements of
+                    which keys must be used (AND and OR logic) is inherited from the presentation submission logic.
+                </p>
+
+                <pre class="example" title="Input descriptor for wallet authentication">
+                    <pre class="json">{
+                        id: 'authnfactors',
+                        name: 'Identity verification enforced',
+                        purpose: "We need to assert the holder's identity matching the subject",
+                        group: ['identity'],
+                        constraints: {
+                            fields: [{
+                                path: ['vp.proof.creator'],
+                                purpose: 'A second factor must be enforced',
+                                filter: {
+                                    type: 'string',
+                                    pattern: '^did:(.*)#(silent|biometric)$'
+                                }   
+                            }]
+                        }
+                    }
+                    </pre>
+
+                </pre>
+
+                <pre class="example" title="Input descriptor for second factor authentication">
+                    <pre class="json">{
+                            id: 'wallet_auth',
+                            name: 'Wallet Application Authentication',
+                            purpose:'We need to assert the source of the credentials as a trusted wallet',
+                            group: ['identity'],
+                            constraints: {
+                                fields: [{
+                                    path: ['vp.proof.creator'],
+                                    purpose: 'The presentation must be signed with one of the trusted app dids',
+                                    filter: {
+                                        type: 'string',
+                                        pattern: '^(did:gatc:183y59466qw9816323|did:gatc:ctq98AHNE8dJG1KsbbW9CIIe8Hp97yF9)#appAuth$'
+                                    }
+                                }]
+                            }
+                        }
+                    </pre>
+                </pre>
+
+
+            </section>
+        </section>
+
+    </section>
+    <section data-dfn-for="Exchange Protocol">
+        <h1>Exchange Protocol</h1>
+        <section data-dfn-for="Exchange Protocol">
+            <h2>
+                DID SIOP
+            </h2>
+            <p>
+                <a href=" https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html">DID
+                    SIOP</a> is RECOMMENDED as Exchange Protocol.
+            </p>
+        </section>
+
+        <section data-dfn-for="Alternatives">
+            <h2>
+                Alternatives
+            </h2>
+            <p>
+                Any protocol using the <a>Presentation Exchange</a> protocol is succeptible of extension to support the
+                full verifier capabilities.
+                That would include <a href="https://identity.foundation/DIDcomm-messaging/spec/">DID
+                    Comm</a> if
+                following the <a href="https://identity.foundation/waci-presentation-exchange/">WACI Specification</a>.
+
+            </p>
+
+            <p>
+                Additionally, a specific API based on <a href="https://w3c-ccg.github.io/vc-api/">VC-HTTP-APIS</a> has
+                been defined for interop testing. This API doesn't cover the exchange communication protocol, just the
+                logic at data model validation.
+            </p>
+            <p>
+                The <a href="https://gataca-io.github.io/vui-core/index.html">testing API</a> covers also the endpoints
+                necessary for <a>Data Agreement</a> integration.
+            </p>
+        </section>
+    </section>
+
+    <section id="tof"></section>
+</body>
+
+</html>

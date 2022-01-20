@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+    <script src="./common.js"></script>
+    <script class="remove">
+        // All config options at https://respec.org/docs/ 
+        var respecConfig = {
+            specStatus: "unofficial",
+            editors: [
+                {
+                    name: "José San Juan",
+                    mailto: "it@gataca.io"
+                },
+            ],
+            github: "gataca-io/vui-specs",
+            shortName: "vui-issuer-resolution",
+            xref: "web-platform",
+            group: "Verifier Universal Interfaces",
+            localBiblio: ccg.localBiblio,
+            logos: [
+                {
+                    src: "https://cdn2.hubspot.net/hubfs/4728390/GATACA_ISOTYPE_GRADIENT.png",
+                    url: "https://gataca.io",
+                    alt: "GATACA",
+                    width: 100,
+                    height: 100,
+                    id: "gataca-logo",
+                },
+            ],
+        };
+    </script>
+    <style>
+        .oplist {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .oplist:first-of-type {
+            counter-reset: item;
+        }
+
+        .start2 {
+            counter-set: item 1;
+        }
+
+        .start4 {
+            counter-set: item 3;
+        }
+
+        .oplist>li {
+            display: table;
+            counter-increment: item;
+            margin-bottom: 0.6em;
+        }
+
+        .oplist>li:before {
+            content: counters(item, ".") ". ";
+            display: table-cell;
+            padding-right: 0.6em;
+        }
+
+        li .oplist>li {
+            margin: 0;
+        }
+
+        li .oplist>li:before {
+            content: counters(item, ".") " ";
+        }
+
+        table {
+            border-collapse: collapse;
+            border-width: 1px;
+        }
+
+        table td,
+        table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title">Issuer Resolution</h1>
+    <h2 id="subtitle">Definition of the standards under the <a>Verifier Universal Interface</a> protocol, to define a
+        common format for any governance platform possessing a trusted issuers registry.
+    </h2>
+
+    <section id="abstract">
+        <p>
+            One of the major issues on the Decentralized Identity model is how to trust the issuers of credentials, and
+            how to make sure that all legal requirements concerning the identity validation have been correctly
+            fulfilled.
+        </p>
+        <p>
+            On the Decentralized Identity world, there will coexist multiple "governance" platforms, differenced by
+            technology, geographical, economical or legal frameworks.
+        </p>
+        <p>
+            If we wish to ensure interoperability between technology providers, and more precisely verifiers, it is
+            necessary to stablish a common standard interface agnostic of the governance platform to allow external
+            actors to retrieve a list of trusted issuers for a specific credential.
+        </p>
+        <dd>
+            This document proposes a generic Data Model and API, agnostic of any current framework, to expose a trusted
+            issuers registry to any external actor.
+        </dd>
+
+        <p class="ednote">
+            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
+            offer a new protocol appliable to know SSI governance frameworks.
+        </p>
+    </section>
+    <section id="sotd">
+        <p> </p>
+    </section>
+    <section data-dfn-for="Context">
+        <h1>Context</h1>
+
+        <p>
+            Many technology providers have offered different solutions to solve the problem of "who should be trusted as
+            an issuers". Some known solutions could be hardcoded lists in configuration files, API services, Domain name
+            consultations, or Blockchain/DLT registries.
+        </p>
+        <p>
+            In the SSI world however, its the Verifier who must finally have the decision on who he can trust. That
+            means that a verifier should be allowed to query different governance platforms to retrieve their issuers
+            and assign different levels of trust to each one of them. The verifier could even have a private registry of
+            issuers not available publicly.
+        </p>
+        <p>
+            Only in the context of the Essiflab project, there are multiple solutions trying to offer partial solutions
+            to this problem:
+        <ul>
+            <li>
+                <a href="https://essif-lab.eu/essif-train-by-fraunhofer-gesellschaft/">Fraunhofer SIT: TRAIN</a>
+            </li>
+            <li>
+                <a href="https://github.com/UBICUA-JSSI/ssiddi/">UBICUA: Self-Sovereign Identity Description, Discovery
+                    and Interoperability</a>
+            </li>
+            <li>
+                <a href="https://github.com/tno-ssi-lab/credential-catalog">TNO: Credential Catalog</a>
+            </li>
+        </ul>
+        </p>
+        <p>
+            In the context of EBSI Essif, a trusted issuer registry has been designed with a complex governance protocol
+            to determine who can issue which credentials and who can vouch for those issuers. A generic, agnostic
+            approach to that kind of behaviour, that could be ported to any governance platform, could be the solution
+            required by verifiers.
+        </p>
+        <p>
+            This document will try to offer a generic adaptation compatible with EBSI Essif trusted registries that
+            could be a solution for any governance framework.
+            The verifier will just need to build a generic query interface, just like the Universal DID Resolver, to
+            retrieve the issuers from any platform, and manage them as he pleases.
+        </p>
+        <section id="conformance">
+        </section>
+        <section id="terminology">
+            <h2>Terminology</h2>
+            <dl>
+                <dt><dfn data-lt="DID|<a>DIDs</a>|decentralized identifiers">Decentralized Identifier</dfn>
+                    (DID)</dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID document</dfn></dt>
+                <dd>As defined in [[DID-CORE]].</dd>
+                <dt><dfn data-lt="">DID resolution</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="DID resolver's">DID resolver</dt>
+                <dd>As defined in [[DID-RESOLUTION]].</dd>
+                <dt><dfn data-lt="VC|Verifiable Credential">Verifiable Credential</dfn> (VC)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
+                <dd>As defined in [[VC-DATA-MODEL]].</dd>
+                <dt><dfn data-lt="LD PROOFS|Proofs|Linked Data Proofs">Linked Data Proofs</dfn></dt>
+                <dd>As defined in [[LD-PROOFS]].</dd>
+                <dt><dfn data-lt="JSON-LD">JSON-LD</dfn></dt>
+                <dd>As defined in [[JSON-LD]]</dd>
+                <dt><dfn data-lt="VUI|Verifier Universal Interface">Verifier Universal Interface</dfn>(VUI)</dt>
+                <dd>As defined in [[VUI]]</dd>
+            </dl>
+        </section>
+    </section>
+    <section data-dfn-for="Data Model">
+        <h1>Data Model</h1>
+
+        <p>
+            The data model marks the representation of a Trusted Issuer
+        </p>
+
+        <p>
+            A Trusted Issuer is a signed document presenting all the information of a credentials issuer, with the
+            accreditations backing the identity validation process performed.
+        </p>
+
+        <h3>Properties</h3>
+        <dl>
+            <dt>
+                Id
+            </dt>
+            <dd>
+                Unique id to reference this issuer in the governance platform
+            </dd>
+            <dt>
+                Dids
+            </dt>
+            <dd>
+                List of DIDs that can be used from this organization to issue credentials.
+            </dd>
+            <dt>
+                Domain
+            </dt>
+            <dd>
+                Economic/industry domain to which this organization belongs.
+            </dd>
+            <dt>
+                Service Endpoints
+            </dt>
+            <dd>
+                OPTIONAL Description of the multiple service endpoints that the organization may issue to issue
+                credentials
+                <dl>
+                    <dt>
+                        Id
+                    </dt>
+                    <dd>
+                        DID associated to the service
+                    </dd>
+                    <dt>
+                        Service Endpoint
+                    </dt>
+                    <dd>
+                        URL endpoint of the issuance service
+                    </dd>
+                    <dt>
+                        Type
+                    </dt>
+                    <dd>
+                        Description of the service
+                    </dd>
+                </dl>
+            </dd>
+            <dt>
+                Eidas Certificates
+            </dt>
+            <dd>
+                OPTIONAL Include information about Eidas Certificates that may be linked to the issuer and used by him.
+                <dl>
+                    <dt>
+                        Certificate Issuer Number
+                    </dt>
+                    <dd>
+                        Identification of the cerfificate issuer
+                    </dd>
+                    <dt>
+                        Certificate Pem
+                    </dt>
+                    <dd>
+                        PEM of the Eidas Certificate
+                    </dd>
+                    <dt>
+                        Certificate Serial Number
+                    </dt>
+                    <dd>
+                        Serial number of the Eidas Certificate
+                    </dd>
+                </dl>
+            </dd>
+        </dl>
+
+        <section data-dfn-for="JSON-LD Context">
+
+            <h2>
+                JSON-LD Context
+            </h2>
+
+            <p>
+                JSON-LD is a JSON-based format used to serialize Linked Data.
+            </p>
+            <p>
+                The JSON-LD representation defines the following representation-specific entries:
+            </p>
+            <dl>
+
+                <dt>
+                    @context
+                </dt>
+                <dd>
+                    The JSON-LD Context is either a string or a list containing any combination of strings and/or
+                    ordered
+                    maps.
+                </dd>
+            </dl>
+
+        </section>
+
+        <section data-dfn-for="Organization Info">
+
+            <h2>
+                Organization Info
+            </h2>
+
+            <p>
+                The trusted issuer registry contains all the information about organization issuing the credentials.
+                That implies both legal information and information to present the issuer to the users.
+            </p>
+
+            The MANDATORY properties about the organization info are:
+            <dl>
+                <dt>
+                    Legal Name
+                </dt>
+                <dt>
+                    Domain Name
+                </dt>
+                <dd>
+                    Company base domain
+                </dd>
+            </dl>
+
+            Other OPTIONAL properties that CAN be listed about a Trusted Issuer providing legal information about him:
+            <ul>
+                <li>areaGroup</li>
+                <li>EORI</li>
+                <li>discoveryURL</li>
+                <li>identifierBag</li>
+                <li>legalAddress</li>
+                <li>legalPersonalIdentifier</li>
+                <li>LEI</li>
+                <li>SEED</li>
+                <li>SIC</li>
+                <li>taxReference</li>
+                <li>VATRegistration</li>
+            </ul>
+
+            <section data-dfn-for="Preferred Display">
+
+                <h2>
+                    Preferred Display
+                </h2>
+
+                The organization info CAN also contain information about how the data MUST be presented, under the
+                <b>Preferred Display</b> property:
+
+                <dl>
+                    <dt>
+                        preferredDisplay
+                    </dt>
+                    <dd>
+                        <dl>
+                            <dt>
+                                Preferred Name
+                            </dt>
+                            <dd>
+                                Name used to display the issuer.
+                            </dd>
+                            <dt>
+                                Logo
+                            </dt>
+                            <dd>
+                                OPTIONAL Logo to represent the issuer.
+                            </dd>
+                            <dt>
+                                Style
+                            </dt>
+                            <dd>
+                                OPTIONAL Color and font family employed RECOMMENDED to display the issuer.
+                            </dd>
+                            <dt>
+                                Background
+                            </dt>
+                            <dd>
+                                OPTIONAL Color or image uri background RECOMMENDED to display the issuer.
+                            </dd>
+                        </dl>
+                    </dd>
+                </dl>
+            </section>
+
+
+        </section>
+
+        <section data-dfn-for="Accreditations">
+
+            <h2>
+                Accreditations
+            </h2>
+
+            <p>
+                The accreditations are issued by trusted members charged of the platform management.
+            </p>
+            <p>
+                The accreditations indicate which credential schemas can be issued by the issuer and give
+                information
+                about the validation process executed to issue those credentials.
+            </p>
+            <dl>
+                <dt>
+                    Accreditor
+                </dt>
+                <dd>
+                    <a>DID</a> of the trusted manager auditing the issuance process
+                </dd>
+                <dt>
+                    CreatedAt
+                </dt>
+                <dd>
+                    Time of issuance of the accreditation
+                </dd>
+                <dt>
+                    Expiration Date
+                </dt>
+                <dd>
+                    Time until which the accreditation is valid
+                </dd>
+                <dt>
+                    Credential Schema
+                </dt>
+                <dd>
+                    Schema of the credential allowed to issue by this accreditation
+                </dd>
+                <dt>
+                    Level of Trust
+                </dt>
+                <dd>
+                    Designated level of trust of the validation process, following EIDAS directives
+                </dd>
+                <dt>
+                    Evidence
+                </dt>
+                <dd>
+                    Description of the identity validations performed during the issuance process
+                </dd>
+                <dt>
+                    Proof
+                </dt>
+                <dd>
+                    <a>Linked Data Proof</a> issued by the Trusted manager to validate the accreditation.
+                </dd>
+            </dl>
+
+        </section>
+
+        <section data-dfn-for="Proof">
+            <h2>
+                Proof
+            </h2>
+
+            <p>
+                <a>Data Proof</a> asserting the event and the current resulting state of the <a></a>Data
+                Agreement</a>, as described in <a href="https://www.w3.org/TR/vc-data-model/#proofs-signatures">VC
+                    Data
+                    Model</a>. One or
+                more cryptographic proofs that can be used to detect tampering and
+                verify the
+                authorship of a modification or acceptance event.
+            </p>
+
+            <p>
+                The governance service MUST assert the truth of the contents of a Issuer record by signing them with
+                a
+                platform <a>DID</a>.
+            </p>
+
+        </section>
+
+        <pre class="example" title="Data Agreement Template">
+                                     <pre class="json">
+{
+    "@context": "https://gataca.io/schemas/tir/2020/v1",
+    "accreditations": [{
+        "accreditor": "did:gatc:2abcd...ABC",
+        "createdAt": {},
+        "credentialSchema": "https://gataca.io/tsr/exampleSchema1.json",
+        "evidence": {
+            "evidenceDocuments": ["Passport"],
+            "documentPresence": "Physical",
+            "id": "https://essif.europa.eu/tsr/evidence/f2aeec97-fc0d-42bf-8ca7-0548192d4231",
+            "subjectPresence": "Physical",
+            "type": [ "DocumentVerification"]
+        },
+        "expirationDate": {},
+        "levelOfTrust": 2,
+        "proof": [{
+            "created": {},
+            "jws": "abc...123=",
+            "proofPurpose": "assertionMethod",
+            "type": "EidasSeal2021",
+            "verificationMethod": "did:gatc:2abcd...ABC#123456789"
+            }],
+        "validFrom": {}   
+    }],
+    "eidasCertificates": [{
+        "eidasCertificateIssuerNumber": "123456",
+        "eidasCertificatePem": "[...PEM-ENC-CERT...]",
+        "eidasCertificateSerialNumber": "123456"
+    }],
+    "dids": [
+        "did:gatc:2abcd...ABC#123456789",
+        "did:ebsi:2abcd...ABC#123456789"
+    ],
+    "domain": "Education",
+    "id": "e20993d1-2430-462b-a9d0-2f2ead3345f8",
+    "organizationInfo": {
+        "areaGroup": "Education",
+        "EORI": "AT123456789101",
+        "discoveryURL": "https://example.organization.com",
+        "domainName": "https://example.organization.com",
+        "identifierBag": "ddd1ebce-8305-4edf-b6b6-7588aa021311",
+        "legalAddress": "Example Street, 38, 3 Izq, Madrid, Spain",
+        "legalName": "Example Legal Name",
+        "legalPersonalIdentifier": "123456789",
+        "LEI": "12341212EXAMPLE34512",
+        "preferredDisplay": {
+            "background": {
+                "color": "#ABCDEF",
+                "uri": "https://example.org/background.jpg"
+            },
+            "logo": "https://example.org/logo.jpg",
+            "preferredName": "Brand Name",
+            "style": {
+                "color": "#ABCDEF",
+                "fontFamily": "arial"
+            }
+        },
+        "SEED": "AT12345678910",
+        "SIC": "1234",
+        "taxReference": "123456789",
+        "VATRegistration": "ATU12345678"
+    },
+    "proof": [{
+        "created": {},
+        "jws": "abc...123=",
+        "proofPurpose": "assertionMethod",
+        "type": "EidasSeal2021",
+        "verificationMethod": "did:gatc:2abcd...ABC#123456789"
+    }],
+    "serviceEndpoints": [{
+        "id": "did:gatc:2abcd...ABC#123456789#openid",
+        "serviceEndpoint": "https://openid.example.com/",
+        "type": "OpenIdConnectVersion1.0Service"
+        }]
+    }
+                        </pre>
+        </pre>
+    </section>
+
+    <section data-dfn-for="Resolution API">
+        <h1>Resolution API</h1>
+
+        <p>
+            The resolution API is a very simple query <a>REST API</a>, just with GET Operations
+        </p>
+
+        <p class="ednote">
+            This document does not aim to standarize operations for platform management, just resolution operations.
+        </p>
+
+        <p>
+            The governance resoluion API to exposed the trusted issuer registry MUST conform with <a
+                href="https://gataca-io.github.io/vui-core/index.html">the Issuer Resolution API defined</a> on the
+            corresponding
+            <a>VUI</a> working package.
+        </p>
+
+    </section>
+
+    <section id="tof"></section>
+</body>
+
+</html>
