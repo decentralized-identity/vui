@@ -16,7 +16,7 @@
                     mailto: "it@gataca.io"
                 },
             ],
-            github: "gataca-io/vui-specs",
+            github: "gataca-io/vui",
             shortName: "vui-pex",
             xref: "web-platform",
             group: "Verifier Universal Interfaces",
@@ -392,10 +392,13 @@
                         <pre class="json">
                                 {
                                     "verifiablePresentation": {
-                                        "@context": ["https://www.w3.org/2018/credentials/v1", "https://identity.foundation/presentation-exchange/submission/v1"],
-                                        "data_agreement_id": "G5Numq3USqDJLzpZ4R9vB6zuQ4djGPwy6cY9usDYGqNn",
-                                        "holder": "did:gatc:NzdlMDBhMDZlYjdkZGYxYzQwZjJkOTYx",
-                                        "presentation_submission": {...},
+                                        "dataAgreement":"https://universalverifier.io/api/v1/sessions/CAajN2Z9z2pDW5jYfLdN5iemXutsK5mYDXE8porx79f/dataAgreement",
+                                        "name": "Gataca",
+                                        "id": "CAajN2Z9z2pDW5jYfLdN5iemXutsK5mYDXE8porx79f",
+                                        "purpose": "Demo",
+                                        "format": {...},
+                                        "submission_requirements": [...],
+                                        "input_descriptors": [...],
                                         "proof": {
                                             "created": "2022-01-07T11:53:21Z",
                                             "creator": "did:gatc:24gsRbsURij3edoveHv81jt9EnhggrnR#keys-1",
@@ -405,9 +408,7 @@
                                             "signatureValue": "qGIh5JLxollEek5l1yFUcwmHj2H1ZYn3PR8uTa5bDtIcpW6MKKJDpc5_YQjqHGVUKbre8EMDI7e07lgR1ZJ9Bg",
                                             "type": "JcsEd25519Signature2020",
                                             "verificationMethod": "did:gatc:24gsRbsURij3edoveHv81jt9EnhggrnR#keys-1"
-                                        },
-                                        "type": ["VerifiablePresentation", "PresentationSubmission"],
-                                        "verifiableCredential": [...]
+                                        }
                                     }
                                 }
                     </pre>
@@ -540,6 +541,26 @@
                 </p>
 
                 <pre class="example" title="Input descriptor for wallet authentication">
+                                    <pre class="json">{
+                                            id: 'wallet_auth',
+                                            name: 'Wallet Application Authentication',
+                                            purpose:'We need to assert the source of the credentials as a trusted wallet',
+                                            group: ['identity'],
+                                            constraints: {
+                                                fields: [{
+                                                    path: ['vp.proof.creator'],
+                                                    purpose: 'The presentation must be signed with one of the trusted app dids',
+                                                    filter: {
+                                                        type: 'string',
+                                                        pattern: '^(did:gatc:183y59466qw9816323|did:gatc:ctq98AHNE8dJG1KsbbW9CIIe8Hp97yF9)#appAuth$'
+                                                    }
+                                                }]
+                                            }
+                                        }
+                                    </pre>
+                </pre>
+
+                <pre class="example" title="Input descriptor for second factor authentication">
                     <pre class="json">{
                         id: 'authnfactors',
                         name: 'Identity verification enforced',
@@ -560,25 +581,7 @@
 
                 </pre>
 
-                <pre class="example" title="Input descriptor for second factor authentication">
-                    <pre class="json">{
-                            id: 'wallet_auth',
-                            name: 'Wallet Application Authentication',
-                            purpose:'We need to assert the source of the credentials as a trusted wallet',
-                            group: ['identity'],
-                            constraints: {
-                                fields: [{
-                                    path: ['vp.proof.creator'],
-                                    purpose: 'The presentation must be signed with one of the trusted app dids',
-                                    filter: {
-                                        type: 'string',
-                                        pattern: '^(did:gatc:183y59466qw9816323|did:gatc:ctq98AHNE8dJG1KsbbW9CIIe8Hp97yF9)#appAuth$'
-                                    }
-                                }]
-                            }
-                        }
-                    </pre>
-                </pre>
+
 
 
             </section>

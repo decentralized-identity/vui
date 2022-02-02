@@ -15,7 +15,7 @@
                     mailto: "it@gataca.io"
                 },
             ],
-            github: "gataca-io/vui-specs",
+            github: "gataca-io/vui",
             shortName: "vui-data-agreements",
             xref: "web-platform",
             group: "Verifier Universal Interfaces",
@@ -188,7 +188,7 @@
                 <dd>As defined in [[VC-DATA-MODEL]].</dd>
                 <dt><dfn data-lt="VP|Verifiable Presentation">Verifiable Presentation</dfn> (VP)</dt>
                 <dd>As defined in [[VC-DATA-MODEL]].</dd>
-                <dt><dfn data-lt="LD PROOFS|Proofs|Linked Data Proofs">Linked Data Proofs</dfn></dt>
+                <dt><dfn data-lt="LD PROOFS|Proofs|Linked Data Proofs|Data Proof">Linked Data Proofs</dfn></dt>
                 <dd>As defined in [[LD-PROOFS]].</dd>
                 <dt><dfn data-lt="DIF Presentation Exchange|Presentation Exchange">Presentation Exchange</dfn></dt>
                 <dd>As defined in [[VUI-PRESENTATION-EXCHANGE]]</a></dd>
@@ -199,7 +199,8 @@
                 <dt><dfn data-lt="DPIA|DPIAs">Data Protection Impact Assessments</dfn> (DPIA)</dt>
                 <dd>As defined in <a href="https://gdpr.eu/data-protection-impact-assessment-template/">GDPR - DPIA</a>
                 </dd>
-                <dt><dfn data-lt="Data Agreement|Automated Data Agreement">Data Agreement</dfn></dt>
+                <dt><dfn data-lt="Data Agreement|Automated Data Agreement|ADA">(Automated) Data Agreements (ADA)</dfn>
+                </dt>
                 <dd>As defined in [[ADA]]</dd>
                 <dt><dfn data-lt="Data Agreement Template">Data Agreement Template</dfn></dt>
                 <dd>See <a href="#data-agreement-template"> Data Model</a></dd>
@@ -919,8 +920,8 @@
                     If there are none existent, then a new <a>Data Agreement</a> MUST be created.
                 </li>
                 <li>
-                    If there are is one or more existent, but with a different <b>template_id<b></b>, then a new <a>Data
-                            Agreement</a> MUST be created.
+                    If there are is one or more existent, but with a different <b>template_id</b>, then a new <a>Data
+                        Agreement</a> MUST be created.
                 </li>
                 <li>
                     If there is one existing with the same <b>template_id</b>, the <b>template_version</b> MUST be
@@ -1248,7 +1249,7 @@
         <p>
             As defined before, to embed the <a>Data Agreement</a> in a <a>Presentation Exchange</a>, a <a>Data Agreement
                 Template</a> MUST be defined.
-            Said template MUST be either referred or embedded in the <a>Presentation Definition Document</a>.
+            Said template MUST be either referred or embedded in the <a>Presentation Definition</a> Document.
         </p>
 
         <p>
