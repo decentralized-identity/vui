@@ -124,7 +124,7 @@
 
         <p>
             This document specifies the interfaces that MAY be consumed by any verifier allowing him to be interoperable
-            with any wallet fulfilling this interface; regardless of :
+            with any wallet fulfilling this interface, regardless of:
         <ul>
             <li>
                 The vendor of the technology
@@ -140,9 +140,9 @@
         </p>
 
         <p class="ednote">
-            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
-            propose a universal interfaces for a verifier. This format is however extremely adequate to allow to work
-            and contribute
+            Despite its format, this document does not aim to be published on the W3C as a standard normative, rather it aims to
+            propose a universal interfaces for a verifier. However, this format is however extremely adequate to allow work
+            and contribution
             on the protocol definition.
         </p>
     </section>
@@ -152,17 +152,17 @@
     <section data-dfn-for="Context">
         <h1>Context</h1>
         <p>
-            As different technology providers are offering SSI Solutions, it becomes a relevant matter to ensure
-            interoperability between those providers. On a not yet stable market, most providers aim to offer the whole
+            As different technology providers are offering SSI solutions, it becomes increasingly relevant to ensure
+            interoperability between them. On a not yet stable market, most providers aim to offer the whole
             SSI stack: components for holders, verifiers, issuers and did-resolver.
         </p>
         <p>
             In order to avoid vendor lock-ins, the APIs exploited by the Verifiers component can be standarized. This
-            document aims to offer the sufficient capabilities for a Verifier component of some technology provider to
+            document aims to offer the necessary capabilities for a Verifier component of a technology provider to
             use the technology stack of another SSI provider.
         </p>
         <p>
-            This document presents just an overview of all the different interfaces covered by the Verifier Universal
+            This document presents an overview of all the different interfaces covered by the Verifier Universal
             Interface working group. It refers to each of their specs and tries to provide (if needed) additional
             information on how they relate.
         </p>
@@ -266,7 +266,7 @@
         <p>
             In order to allow Verifier operation as decribed in <a href="#verifier-operations">the previous section</a>,
             this
-            document proposes a definition of the Interfaces between the Verifier and other components.
+            document proposes a definition for the Interfaces between the Verifier and other components.
         </p>
         <p>
             Those interfaces MUST be independent from any framework or programming language. Interfaces shall be
@@ -306,7 +306,7 @@
             <h1>DID Resolver interfaces</h1>
             <section data-dfn-for="DID Resolution">
                 <h2>DID Resolution</h2>
-                Standard protocol and considerations for DID Resolution is being defined by a specific working group. <a
+                Standard protocol and considerations for DID Resolution are being defined by a specific working group. <a
                     href="https://w3c-ccg.github.io/did-resolution/">See [DID-RESOLUTION] </a>.
             </section>
         </section>
@@ -316,14 +316,14 @@
             <section data-dfn-for="Credential Status">
                 <h2>Credential Status</h2>
                 Standard protocol and considerations for querying the status of the credentials and managing their
-                revocation is being defined by a specific working group. <a
+                revocation are being defined by a specific working group. <a
                     href="https://w3c-ccg.github.io/vc-status-rl-2020/">See [VC-STATUS-RL-2020] </a>.
             </section>
         </section>
         <section data-dfn-for="Governance">
             <h2>Governance interfaces</h2>
             <p>
-                The Identity platform governance should determine what kind of credentials might be issued by the
+                The Identity platform governance should determine what kind of credentials could be issued by the
                 different
                 parties, the specific formats and contexts of those credentials, as well as which entities fulfill the
                 requirements to issue each specific credential.
@@ -338,7 +338,7 @@
                     Manage the format of every credential
                 </li>
                 <li>
-                    Stablish the relation between different credentials, taken as attributes to build more complex
+                    Establish the relationship between different credentials, taken as attributes to build more complex
                     credentials
                 </li>
                 <li>
@@ -383,7 +383,7 @@
 
             <section data-dfn-for="Issuer Resolution">
                 <h2>Issuer Registry</h2>
-                The VUI protocol and considerations for querying the issuer registry is being defined by a specific
+                The VUI protocol and considerations for querying the issuer registry are being defined by a specific
                 working
                 package inside the VUI. <a href="/vui/issuerResolution">See
                     [WP-VUI-IssuerResolution] </a>.
@@ -439,17 +439,17 @@
                 </ul>
 
                 <p>
-                    At this point of definition and implementation, VUI Presentation Exchange is focused on having
+                    At this point of in the process of definition and implementation, VUI Presentation Exchange is focused on having
                     support
                     on the last one <a
                         href=" https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html">DID
-                        SIOP</a>
+                        SIOP</a>.
                 </p>
             </section>
             <section data-dfn-for="Data Agreements">
                 <h2>Data Agreements</h2>
                 <p>
-                    Data Agreements include Data privacy management oriented to the enforcement of DPIA controls, in
+                    Data Agreements includes Data privacy management oriented for the enforcement of DPIA controls in
                     privacy
                     frameworks such as GDPR.
                 </p>
