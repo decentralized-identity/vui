@@ -101,14 +101,14 @@
 
     <section id="abstract">
         <p>
-            Data usage and data sharing is a major concern in every digital service provided. Regulation has increased
-            according to users needs for the last decade.
+            Data usage and data sharing is a major concern in all digital services and for the last decade, regulation has increased
+            according to user needs.
         </p>
         <p>
-            On the Decentralized Identity model, there is no current support to the managing of the data. Considering
-            the user experience perspective, as well as his rights and the service provider risk assessment and data
-            management processes, a specific protocol to agree on the usage of verifiable credentials might be very
-            attractive to most verifiers.
+            On the Decentralized Identity model, there is no current support for the management of the data. Considering
+            the user experience perspective, user rights and service provider risk assessment and data
+            management processes, a specific protocol to agree on the usage of verifiable credentials could be
+            attractive for verifiers.
         </p>
         <dd>
             This document proposes a specific Data Model to manage data agreements. It also defines a basic protocol and
@@ -118,9 +118,9 @@
         </dd>
 
         <p class="ednote">
-            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
-            offer a new protocol appliable to know SSI frameworks to improve the management of data.
-            The extensions caused on other protocols shall be discussed and included if considered deemed.
+            Despite its format, this document doesn't aim to be published on the W3C as a standard normative, rather it aims to
+            offer a new protocol that is applicable to known SSI frameworks for the improvement of data management.
+            Other protocol extensions shall be discussed and included if considered appropriate.
         </p>
     </section>
     <section id="sotd">
@@ -161,13 +161,13 @@
         <p>
             The benefits of <a>Automated Data Agreement</a> in the management of <a>
                 DPIA
-            </a> are presented in [[ADA]]. This kind of protocol could even be integrated in automation tools to manage
+            </a> are presented in [[ADA]]. This kind of protocol could also be integrated in automation tools to manage
             a company's <a>DPIA</a>.
         </p>
         <p>
             This document will try to offer an adaptation, built upon both <a>Automated Data Agreements</a> and Kantara
             <a>Consent Receipts</a>, of those same data privacy mechanisms in the context of the Verifier Universal
-            Interface. That is, trying to avoid specific technical solutions and in comunion to other related interfaces
+            Interface; that is, avoiding specific technical solutions and in comunion to other related interfaces
             such as the <a>Presentation Exchange</a>.
         </p>
         <section id="conformance">
@@ -850,7 +850,7 @@
 
         <h2>Known deviations </h2>
         <p>
-            There are some known deviations from <a>Automated Data Agreements</a> due either to technical implementation
+            There are some known deviations from <a>Automated Data Agreements</a> due to either technical implementation
             issues or to the adaptation to the <a>Presentation exchange</a> protocol.
         </p>
         <p>
@@ -870,7 +870,7 @@
             <li>
                 <b>Including data subject and data holder:</b> <br>
                 The data user and the data holder are required to verify the DIDs performing the different
-                acceptance/update events on the <a>Data Agreement</a>
+                acceptance/update events on the <a>Data Agreement</a>.
                 <br>
                 The distinction between both roles has been included to allow the usage of Peer DIDs or Identity
                 Delegation processes.
@@ -913,14 +913,14 @@
 
             <p>
                 The Holder SHOULD check for existent <a>Data Agreement Records</a> belonging to the same <b>data
-                    receiver id</b> id.
+                    receiver id</b>.
                 <br>
             <ul>
                 <li>
-                    If there are none existent, then a new <a>Data Agreement</a> MUST be created.
+                    If these are non-existent, then a new <a>Data Agreement</a> MUST be created.
                 </li>
                 <li>
-                    If there are is one or more existent, but with a different <b>template_id</b>, then a new <a>Data
+                    If there are is one or more existing record, but with a different <b>template_id</b>, then a new <a>Data
                         Agreement</a> MUST be created.
                 </li>
                 <li>
@@ -935,7 +935,7 @@
                 The process to generate a new <a>Data Agreement</a> would be:
             <ol>
                 <li>
-                    Assing a new random Id and set the version to 1
+                    Assign a new random Id and set the version to 1
                 </li>
                 <li>
                     Fill the <a>Data Agreement Record</a> with the attribute ids of the selected credentials matching
@@ -962,10 +962,10 @@
                         <li>
                             Add an event with status <b>Capture</b> with the version <b>1</b> and sign it with the
                             Verifier
-                            <a>DID</a>.
+                            <a>DID</a>
                         </li>
                         <li>
-                            Store the new version of the <a>Data Agreement Record</a>.
+                            Store the new version of the <a>Data Agreement Record</a>
                         </li>
                         <li>
                             Return the updated <a>Data Agreement Record</a> to the Holder
@@ -1110,7 +1110,7 @@
                 <br>
                 The protocol of substitution or partial revocation of a specific purpose would be better configured at
                 purpose level.
-                It hasn't been suggested so in the data model to avoid major divergencies with the <a>Consent
+                It hasn't been suggested in the data model to avoid major divergencies with the <a>Consent
                     Receipts</a> and <a>ADA</a> specifications.
             </p>
 
@@ -1242,14 +1242,14 @@
         <h1>Embed in exchange</h1>
 
         <p>
-            This section will guide in how to integrate a <a>Data Agreement</a> inside a <a>Presentation Exchange</a> in
+            This section will provide a guide on how to integrate a <a>Data Agreement</a> inside a <a>Presentation Exchange</a> in
             the context of the <a>Verifier Universal Interface</a>.
         </p>
 
         <p>
-            As defined before, to embed the <a>Data Agreement</a> in a <a>Presentation Exchange</a>, a <a>Data Agreement
+            As previously defined, to embed the <a>Data Agreement</a> in a <a>Presentation Exchange</a>, a <a>Data Agreement
                 Template</a> MUST be defined.
-            Said template MUST be either referred or embedded in the <a>Presentation Definition</a> Document.
+            Said template MUST be either referred to or embedded in the <a>Presentation Definition</a> Document.
         </p>
 
         <p>
