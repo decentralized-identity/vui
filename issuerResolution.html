@@ -100,17 +100,17 @@
 
     <section id="abstract">
         <p>
-            One of the major issues on the Decentralized Identity model is how to trust the issuers of credentials, and
-            how to make sure that all legal requirements concerning the identity validation have been correctly
+            One of the major challenges on the Decentralized Identity model is how to trust the issuers of credentials, and
+            how to make sure that all legal requirements regarding the identity validation have been correctly
             fulfilled.
         </p>
         <p>
-            On the Decentralized Identity world, there will coexist multiple "governance" platforms, differenced by
-            technology, geographical, economical or legal frameworks.
+            In the Decentralized Identity world, multiple "governance" platforms differentiated by
+            technology, geographical, economical or legal frameworks will coexist.
         </p>
         <p>
             If we wish to ensure interoperability between technology providers, and more precisely verifiers, it is
-            necessary to stablish a common standard interface agnostic of the governance platform to allow external
+            necessary to establish a common standard interface that is agnostic of the governance platform to allow external
             actors to retrieve a list of trusted issuers for a specific credential.
         </p>
         <dd>
@@ -119,8 +119,8 @@
         </dd>
 
         <p class="ednote">
-            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
-            offer a new protocol appliable to know SSI governance frameworks.
+            Despite its format, this document doesn't aim to be published on the W3C as a standard normative, rather it aims to
+            offer a new protocol that is applicable to known SSI governance frameworks.
         </p>
     </section>
     <section id="sotd">
@@ -131,14 +131,14 @@
 
         <p>
             Many technology providers have offered different solutions to solve the problem of "who should be trusted as
-            an issuers". Some known solutions could be hardcoded lists in configuration files, API services, Domain name
+            an issuer". Some known solutions could be hardcoded lists in configuration files, API services, Domain name
             consultations, or Blockchain/DLT registries.
         </p>
         <p>
-            In the SSI world however, its the Verifier who must finally have the decision on who he can trust. That
+            In the SSI world however, it's the Verifier who must have the final decision on who he can trust. That
             means that a verifier should be allowed to query different governance platforms to retrieve their issuers
             and assign different levels of trust to each one of them. The verifier could even have a private registry of
-            issuers not available publicly.
+            issuers that is not publicly available.
         </p>
         <p>
             Only in the context of the Essiflab project, there are multiple solutions trying to offer partial solutions
@@ -159,13 +159,13 @@
         <p>
             In the context of EBSI Essif, a trusted issuer registry has been designed with a complex governance protocol
             to determine who can issue which credentials and who can vouch for those issuers. A generic, agnostic
-            approach to that kind of behaviour, that could be ported to any governance platform, could be the solution
+            approach to that kind of behaviour, portable to any governance platform, could be the solution
             required by verifiers.
         </p>
         <p>
             This document will try to offer a generic adaptation compatible with EBSI Essif trusted registries that
-            could be a solution for any governance framework.
-            The verifier will just need to build a generic query interface, just like the Universal DID Resolver, to
+            can be a solution for any governance framework.
+            The verifier will only need to build a generic query interface, similar to the Universal DID Resolver, to
             retrieve the issuers from any platform, and manage them as he pleases.
         </p>
         <section id="conformance">
@@ -203,7 +203,7 @@
         </p>
 
         <p>
-            A Trusted Issuer is a signed document presenting all the information of a credentials issuer, with the
+            A Trusted Issuer is a signed document that presentsa credential issuer's information along with the
             accreditations backing the identity validation process performed.
         </p>
 
@@ -219,19 +219,19 @@
                 Dids
             </dt>
             <dd>
-                List of DIDs that can be used from this organization to issue credentials.
+                List of DIDs that can be used from this organization to issue credentials
             </dd>
             <dt>
                 Domain
             </dt>
             <dd>
-                Economic/industry domain to which this organization belongs.
+                Economic/industry domain to which this organization belongs
             </dd>
             <dt>
                 Service Endpoints
             </dt>
             <dd>
-                OPTIONAL Description of the multiple service endpoints that the organization may issue to issue
+                OPTIONAL Description of the multiple service endpoints that the organization may provide to issue
                 credentials
                 <dl>
                     <dt>
@@ -255,10 +255,10 @@
                 </dl>
             </dd>
             <dt>
-                Eidas Certificates
+                eIDAS Certificates
             </dt>
             <dd>
-                OPTIONAL Include information about Eidas Certificates that may be linked to the issuer and used by him.
+                OPTIONAL Include information about eIDAS Certificates that may be linked to the issuer and used by him.
                 <dl>
                     <dt>
                         Certificate Issuer Number
@@ -267,16 +267,16 @@
                         Identification of the cerfificate issuer
                     </dd>
                     <dt>
-                        Certificate Pem
+                        Certificate PEM
                     </dt>
                     <dd>
-                        PEM of the Eidas Certificate
+                        PEM of the eIDAS Certificate
                     </dd>
                     <dt>
                         Certificate Serial Number
                     </dt>
                     <dd>
-                        Serial number of the Eidas Certificate
+                        Serial number of the eIDAS Certificate
                     </dd>
                 </dl>
             </dd>
@@ -401,7 +401,7 @@
             </h2>
 
             <p>
-                The accreditations are issued by trusted members charged of the platform management.
+                The accreditations are issued by trusted members in charge of the platform management.
             </p>
             <p>
                 The accreditations indicate which credential schemas can be issued by the issuer and give
@@ -437,7 +437,7 @@
                     Level of Trust
                 </dt>
                 <dd>
-                    Designated level of trust of the validation process, following EIDAS directives
+                    Designated level of trust of the validation process, following eIDAS directives
                 </dd>
                 <dt>
                     Evidence
@@ -464,14 +464,14 @@
                 <a>Data Proof</a> asserting the event and the current resulting state of the <a></a>Data
                 Agreement</a>, as described in <a href="https://www.w3.org/TR/vc-data-model/#proofs-signatures">VC
                     Data
-                    Model</a>. One or
+                    Model</a>. This can be one or
                 more cryptographic proofs that can be used to detect tampering and
                 verify the
                 authorship of a modification or acceptance event.
             </p>
 
             <p>
-                The governance service MUST assert the truth of the contents of a Issuer record by signing them with
+                The governance service MUST assert the truth of the contents of an Issuer record by signing them with
                 a
                 platform <a>DID</a>.
             </p>
@@ -563,7 +563,7 @@
         <h1>Resolution API</h1>
 
         <p>
-            The resolution API is a very simple query <a>REST API</a>, just with GET Operations
+            The resolution API is a very simple query <a>REST API</a>, only with GET Operations
         </p>
 
         <p class="ednote">
@@ -571,7 +571,7 @@
         </p>
 
         <p>
-            The governance resoluion API to exposed the trusted issuer registry MUST conform with <a
+            The governance resoluion API to expose the trusted issuer registry MUST conform with <a
                 href="https://gataca-io.github.io/vui-core/issuerResolution.html">the Issuer Resolution API defined</a>
             on the
             corresponding
