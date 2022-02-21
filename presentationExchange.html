@@ -120,8 +120,8 @@
         </dd>
 
         <p class="ednote">
-            Despite its format, this document doesn't aim to be publish on the W3C as a standard normative, rather to
-            propose extensions of existing protocols to allow to connect them with other interfaces or add additional
+            Despite its format, this document doesn't aim to be published on the W3C as a standard normative, rather it aims to
+            propose extensions of existing protocols to allow to connect them with other interfaces and/or add additional
             features.
             Those extensions must be discussed and included if considered deemed on said protocols.
         </p>
@@ -132,10 +132,10 @@
     <section data-dfn-for="Context">
         <h1>Context</h1>
         <p>
-            There are multiple known and well adopted technology solutions or standard focused on the presentation
-            exchange between a wallet and a verifier. There are framework solutions, such as <a
-                href="https://github.com/hyperledger/aries"> Hyperledger Aries</a>.
-            And there are also other standardization efforts, that might be compatible or not with other solutions, such
+            There are multiple known and well adopted technology solutions or standards focused on the presentation
+            exchange between a wallet and a verifier. There are framework solutions such as <a
+                href="https://github.com/hyperledger/aries"> Hyperledger Aries</a>, as well as
+              other standardization efforts, that could be compatible or not with other protocols, such
             as:
         <ul>
             <li>
@@ -158,7 +158,7 @@
         </p>
         <p>
             It seems however that the [DIF Presentation Exchange] Data Model is a well accepted starting point, as it is
-            the base or supported by most of those listed approaches.
+            the foundation of or supported by most of those listed approaches.
         </p>
         <section id="conformance">
         </section>
@@ -203,9 +203,8 @@
         </p>
 
         <p>
-            However, a few extensions of the data models are suggested to allow the usage of <a>Data Agremeents</a> and
-            to
-            improve the verifier capacities to trust the source of the presentation.
+            However, a few extensions of the data models are suggested with the goal of allowing the usage of <a>Data Agremeents</a> and
+            improving verifier capacities in order to trust the source of the presentation.
         </p>
 
         <section data-dfn-for="Extensions">
@@ -228,7 +227,7 @@
                 </h3>
 
                 <p>
-                    The inclusion of data agreements inside a <a>Presentation Exchange</a> MAY be achieved by integring
+                    The inclusion of data agreements inside a <a>Presentation Exchange</a> MAY be achieved by integrating
                     a
                     <a>Data Agreement</a> inside the exchange.
                 </p>
@@ -238,7 +237,7 @@
                 </h4>
 
                 <p>
-                    To do that, the following field MAY be added on the <a>Presentation Definition</a> object:
+                    To do this, the following field MAY be added on the <a>Presentation Definition</a> object:
                 </p>
 
                 <dl>
@@ -368,13 +367,13 @@
                     multiple reasons:
                 <ul>
                     <li>
-                        Avoid physing problems
+                        Avoid phishing problems
                     </li>
                     <li>
                         Improve user experience
                     </li>
                     <li>
-                        Add additional security to off-channel communication, specially if the authenticating device
+                        Add additional security to off-channel communication, especially if the authenticating device
                         needs to read a QR.
                     </li>
                 </ul>
@@ -418,10 +417,10 @@
                     Source Authentication
                 </h3>
 
-                <p>There may be additional requirements by the verifier to trust the source of the credentials:</p>
-                <p>Possessing a <a>DID</a> and some credentials doesn't guarantee that they could be trusted, as they
-                    could
-                    come from a non-secure wallet or belong to malificient users colliding to fake an identity.</p>
+                <p>There may be additional requirements by the verifier to trust the source of credentials:</p>
+                <p>Possessing a <a>DID</a> and some credentials does not guarantee that they can be trusted, as they
+                    can
+                    come from a non-secure wallet or belong to malificient users colluding to fake an identity.</p>
 
                 <p>There is a lot of discussion regarding how to bind the wallet or the subject to the holder. See for
                     instance <a
@@ -441,15 +440,15 @@
 
 
                     <p>Different wallets SHOULD be uniquely identified by a unique <a>DID</a>.</p>
-                    <p>The app private key MUST be refered on the <a>DID</a> with a verification method containing the
+                    <p>The app private key MUST be referred to on the <a>DID</a> with a verification method containing the
                         identifier <dt>#appAuth</dt>
                     </p>
-                    <p>The verifier MAY require a presentation submission to be also signed with the wallet <a>DID</a>.
+                    <p>The verifier MAY require a presentation submission to also be signed with the wallet <a>DID</a>.
                     </p>
-                    <p class="note">Embedding private keys in applications is never completely secure. Any attackers
+                    <p class="note">Embedding private keys in applications is never completely secure. Any attacker
                         will have full access to the code. Obfuscation mechanisms MUST be applied.
                         <br>
-                        Rotating the embeded private keys frequently to difficult the retrieval is
+                        Rotating the embeded private keys frequently to make retrieval more difficult is
                         RECOMMENDED.
                     </p>
                 </section>
@@ -463,17 +462,17 @@
                         RECOMMENDED.</p>
 
                     <p>Each different authentication key should be retrieved after executing an additional
-                        authentication process on the wallet, a second factor authentication. Some of those process
+                        authentication process in the wallet, a second factor authentication. Some of those processes
                         could be:
                     <dl>
                         <dt>silent</dt>
-                        <dd>No other authentication process than having the wallet open</dd>
+                        <dd>No other authentication process other than having the wallet open</dd>
                         <dt>biometric</dt>
                         <dd>Fingerprint or face validation authentication</dd>
                         <dt>email</dt>
                         <dd>Authentication via email OTP</dd>
                         <dt>phone</dt>
-                        <dd>Authentication via sms OTP</dd>
+                        <dd>Authentication via SMS OTP</dd>
                         <dt>faceSDK</dt>
                         <dd>Authentication using a face validation SDK</dd>
                         <dt>authenticator</dt>
@@ -605,7 +604,7 @@
                 Alternatives
             </h2>
             <p>
-                Any protocol using the <a>Presentation Exchange</a> protocol is succeptible of extension to support the
+                Any protocol using the <a>Presentation Exchange</a> protocol is susceptible of extension to support the
                 full verifier capabilities.
                 That would include <a href="https://identity.foundation/DIDcomm-messaging/spec/">DID
                     Comm</a> if
@@ -619,7 +618,7 @@
                 logic at data model validation.
             </p>
             <p>
-                The <a href="https://gataca-io.github.io/vui-core/index.html">testing API</a> covers also the endpoints
+                The <a href="https://gataca-io.github.io/vui-core/index.html">testing API</a> also covers the endpoints
                 necessary for <a>Data Agreement</a> integration.
             </p>
         </section>
